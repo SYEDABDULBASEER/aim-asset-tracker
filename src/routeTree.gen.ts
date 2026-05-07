@@ -9,38 +9,154 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TicketsRouteImport } from './routes/tickets'
+import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as ScannerRouteImport } from './routes/scanner'
+import { Route as ReportsRouteImport } from './routes/reports'
+import { Route as AssetsRouteImport } from './routes/assets'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AssetsIdRouteImport } from './routes/assets.$id'
 
+const TicketsRoute = TicketsRouteImport.update({
+  id: '/tickets',
+  path: '/tickets',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ScannerRoute = ScannerRouteImport.update({
+  id: '/scanner',
+  path: '/scanner',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReportsRoute = ReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AssetsRoute = AssetsRouteImport.update({
+  id: '/assets',
+  path: '/assets',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AssetsIdRoute = AssetsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AssetsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/assets': typeof AssetsRouteWithChildren
+  '/reports': typeof ReportsRoute
+  '/scanner': typeof ScannerRoute
+  '/settings': typeof SettingsRoute
+  '/tickets': typeof TicketsRoute
+  '/assets/$id': typeof AssetsIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/assets': typeof AssetsRouteWithChildren
+  '/reports': typeof ReportsRoute
+  '/scanner': typeof ScannerRoute
+  '/settings': typeof SettingsRoute
+  '/tickets': typeof TicketsRoute
+  '/assets/$id': typeof AssetsIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/assets': typeof AssetsRouteWithChildren
+  '/reports': typeof ReportsRoute
+  '/scanner': typeof ScannerRoute
+  '/settings': typeof SettingsRoute
+  '/tickets': typeof TicketsRoute
+  '/assets/$id': typeof AssetsIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/assets'
+    | '/reports'
+    | '/scanner'
+    | '/settings'
+    | '/tickets'
+    | '/assets/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/assets'
+    | '/reports'
+    | '/scanner'
+    | '/settings'
+    | '/tickets'
+    | '/assets/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/assets'
+    | '/reports'
+    | '/scanner'
+    | '/settings'
+    | '/tickets'
+    | '/assets/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AssetsRoute: typeof AssetsRouteWithChildren
+  ReportsRoute: typeof ReportsRoute
+  ScannerRoute: typeof ScannerRoute
+  SettingsRoute: typeof SettingsRoute
+  TicketsRoute: typeof TicketsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/tickets': {
+      id: '/tickets'
+      path: '/tickets'
+      fullPath: '/tickets'
+      preLoaderRoute: typeof TicketsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/scanner': {
+      id: '/scanner'
+      path: '/scanner'
+      fullPath: '/scanner'
+      preLoaderRoute: typeof ScannerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reports': {
+      id: '/reports'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof ReportsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/assets': {
+      id: '/assets'
+      path: '/assets'
+      fullPath: '/assets'
+      preLoaderRoute: typeof AssetsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,12 +164,45 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/assets/$id': {
+      id: '/assets/$id'
+      path: '/$id'
+      fullPath: '/assets/$id'
+      preLoaderRoute: typeof AssetsIdRouteImport
+      parentRoute: typeof AssetsRoute
+    }
   }
 }
 
+interface AssetsRouteChildren {
+  AssetsIdRoute: typeof AssetsIdRoute
+}
+
+const AssetsRouteChildren: AssetsRouteChildren = {
+  AssetsIdRoute: AssetsIdRoute,
+}
+
+const AssetsRouteWithChildren =
+  AssetsRoute._addFileChildren(AssetsRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AssetsRoute: AssetsRouteWithChildren,
+  ReportsRoute: ReportsRoute,
+  ScannerRoute: ScannerRoute,
+  SettingsRoute: SettingsRoute,
+  TicketsRoute: TicketsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
