@@ -9,14 +9,23 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as VendorsRouteImport } from './routes/vendors'
 import { Route as TicketsRouteImport } from './routes/tickets'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ScannerRouteImport } from './routes/scanner'
 import { Route as ReportsRouteImport } from './routes/reports'
+import { Route as MaintenanceRouteImport } from './routes/maintenance'
+import { Route as EmployeesRouteImport } from './routes/employees'
 import { Route as AssetsRouteImport } from './routes/assets'
+import { Route as AllocationRouteImport } from './routes/allocation'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AssetsIdRouteImport } from './routes/assets.$id'
 
+const VendorsRoute = VendorsRouteImport.update({
+  id: '/vendors',
+  path: '/vendors',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TicketsRoute = TicketsRouteImport.update({
   id: '/tickets',
   path: '/tickets',
@@ -37,9 +46,24 @@ const ReportsRoute = ReportsRouteImport.update({
   path: '/reports',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MaintenanceRoute = MaintenanceRouteImport.update({
+  id: '/maintenance',
+  path: '/maintenance',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EmployeesRoute = EmployeesRouteImport.update({
+  id: '/employees',
+  path: '/employees',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AssetsRoute = AssetsRouteImport.update({
   id: '/assets',
   path: '/assets',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AllocationRoute = AllocationRouteImport.update({
+  id: '/allocation',
+  path: '/allocation',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -55,73 +79,108 @@ const AssetsIdRoute = AssetsIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/allocation': typeof AllocationRoute
   '/assets': typeof AssetsRouteWithChildren
+  '/employees': typeof EmployeesRoute
+  '/maintenance': typeof MaintenanceRoute
   '/reports': typeof ReportsRoute
   '/scanner': typeof ScannerRoute
   '/settings': typeof SettingsRoute
   '/tickets': typeof TicketsRoute
+  '/vendors': typeof VendorsRoute
   '/assets/$id': typeof AssetsIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/allocation': typeof AllocationRoute
   '/assets': typeof AssetsRouteWithChildren
+  '/employees': typeof EmployeesRoute
+  '/maintenance': typeof MaintenanceRoute
   '/reports': typeof ReportsRoute
   '/scanner': typeof ScannerRoute
   '/settings': typeof SettingsRoute
   '/tickets': typeof TicketsRoute
+  '/vendors': typeof VendorsRoute
   '/assets/$id': typeof AssetsIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/allocation': typeof AllocationRoute
   '/assets': typeof AssetsRouteWithChildren
+  '/employees': typeof EmployeesRoute
+  '/maintenance': typeof MaintenanceRoute
   '/reports': typeof ReportsRoute
   '/scanner': typeof ScannerRoute
   '/settings': typeof SettingsRoute
   '/tickets': typeof TicketsRoute
+  '/vendors': typeof VendorsRoute
   '/assets/$id': typeof AssetsIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/allocation'
     | '/assets'
+    | '/employees'
+    | '/maintenance'
     | '/reports'
     | '/scanner'
     | '/settings'
     | '/tickets'
+    | '/vendors'
     | '/assets/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/allocation'
     | '/assets'
+    | '/employees'
+    | '/maintenance'
     | '/reports'
     | '/scanner'
     | '/settings'
     | '/tickets'
+    | '/vendors'
     | '/assets/$id'
   id:
     | '__root__'
     | '/'
+    | '/allocation'
     | '/assets'
+    | '/employees'
+    | '/maintenance'
     | '/reports'
     | '/scanner'
     | '/settings'
     | '/tickets'
+    | '/vendors'
     | '/assets/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AllocationRoute: typeof AllocationRoute
   AssetsRoute: typeof AssetsRouteWithChildren
+  EmployeesRoute: typeof EmployeesRoute
+  MaintenanceRoute: typeof MaintenanceRoute
   ReportsRoute: typeof ReportsRoute
   ScannerRoute: typeof ScannerRoute
   SettingsRoute: typeof SettingsRoute
   TicketsRoute: typeof TicketsRoute
+  VendorsRoute: typeof VendorsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/vendors': {
+      id: '/vendors'
+      path: '/vendors'
+      fullPath: '/vendors'
+      preLoaderRoute: typeof VendorsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/tickets': {
       id: '/tickets'
       path: '/tickets'
@@ -150,11 +209,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReportsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/maintenance': {
+      id: '/maintenance'
+      path: '/maintenance'
+      fullPath: '/maintenance'
+      preLoaderRoute: typeof MaintenanceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/employees': {
+      id: '/employees'
+      path: '/employees'
+      fullPath: '/employees'
+      preLoaderRoute: typeof EmployeesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/assets': {
       id: '/assets'
       path: '/assets'
       fullPath: '/assets'
       preLoaderRoute: typeof AssetsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/allocation': {
+      id: '/allocation'
+      path: '/allocation'
+      fullPath: '/allocation'
+      preLoaderRoute: typeof AllocationRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -187,11 +267,15 @@ const AssetsRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AllocationRoute: AllocationRoute,
   AssetsRoute: AssetsRouteWithChildren,
+  EmployeesRoute: EmployeesRoute,
+  MaintenanceRoute: MaintenanceRoute,
   ReportsRoute: ReportsRoute,
   ScannerRoute: ScannerRoute,
   SettingsRoute: SettingsRoute,
   TicketsRoute: TicketsRoute,
+  VendorsRoute: VendorsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
