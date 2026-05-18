@@ -1,24 +1,45 @@
 import { Link, useRouterState } from "@tanstack/react-router";
+import { useIsAdmin } from "@/lib/auth/AuthProvider";
 import {
-  LayoutDashboard, Package, ArrowLeftRight, Wrench, Ticket,
-  QrCode, Users, Building2, BarChart3, Settings, Boxes,
+  ADMIN_ALLOCATION_PATH,
+  ADMIN_ASSETS_PATH,
+  ADMIN_EMPLOYEES_PATH,
+  ADMIN_HOME_PATH,
+  ADMIN_MAINTENANCE_PATH,
+  ADMIN_REPORTS_PATH,
+  ADMIN_SETTINGS_PATH,
+  ADMIN_TICKETS_PATH,
+  ADMIN_VENDORS_PATH,
+} from "@/lib/auth/routing";
+import {
+  LayoutDashboard,
+  Package,
+  ArrowLeftRight,
+  Wrench,
+  Ticket,
+  Users,
+  Building2,
+  BarChart3,
+  Settings,
+  Boxes,
 } from "lucide-react";
 
 const items = [
-  { title: "Dashboard", url: "/", icon: LayoutDashboard },
-  { title: "Assets", url: "/assets", icon: Package },
-  { title: "Asset Allocation", url: "/allocation", icon: ArrowLeftRight },
-  { title: "Maintenance", url: "/maintenance", icon: Wrench },
-  { title: "Tickets", url: "/tickets", icon: Ticket },
-  { title: "QR Scanner", url: "/scanner", icon: QrCode },
-  { title: "Employees", url: "/employees", icon: Users },
-  { title: "Vendors", url: "/vendors", icon: Building2 },
-  { title: "Reports", url: "/reports", icon: BarChart3 },
-  { title: "Settings", url: "/settings", icon: Settings },
+  { title: "Dashboard", url: ADMIN_HOME_PATH, icon: LayoutDashboard },
+  { title: "Assets", url: ADMIN_ASSETS_PATH, icon: Package },
+  { title: "Asset Allocation", url: ADMIN_ALLOCATION_PATH, icon: ArrowLeftRight },
+  { title: "Maintenance", url: ADMIN_MAINTENANCE_PATH, icon: Wrench },
+  { title: "Tickets", url: ADMIN_TICKETS_PATH, icon: Ticket },
+  { title: "Employees", url: ADMIN_EMPLOYEES_PATH, icon: Users },
+  { title: "Vendors", url: ADMIN_VENDORS_PATH, icon: Building2 },
+  { title: "Reports", url: ADMIN_REPORTS_PATH, icon: BarChart3 },
+  { title: "Settings", url: ADMIN_SETTINGS_PATH, icon: Settings },
 ] as const;
 
 export function AppSidebar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const isAdmin = useIsAdmin();
+  const navItems = isAdmin ? items : items.filter((item) => item.url !== ADMIN_SETTINGS_PATH);
 
   return (
     <aside className="hidden md:flex w-64 shrink-0 flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border">
@@ -28,17 +49,23 @@ export function AppSidebar() {
         </div>
         <div className="leading-tight">
           <div className="text-sm font-semibold text-white">Asset Desk</div>
-          <div className="text-[11px] text-sidebar-foreground/60">EClickTech Solutions</div>
+          <div className="text-[11px] text-sidebar-foreground/60">IT Admin Workspace</div>
         </div>
       </div>
       <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-        <div className="px-2 pb-2 text-[11px] uppercase tracking-wider text-sidebar-foreground/50">Workspace</div>
-        {items.map((item) => {
-          const active = item.url === "/" ? pathname === "/" : pathname.startsWith(item.url);
+        <div className="px-2 pb-2 text-[11px] uppercase tracking-wider text-sidebar-foreground/50">
+          Admin
+        </div>
+        {navItems.map((item) => {
+          const active =
+            item.url === ADMIN_HOME_PATH
+              ? pathname === ADMIN_HOME_PATH || pathname === `${ADMIN_HOME_PATH}/`
+              : pathname.startsWith(item.url);
           return (
             <Link
               key={item.url}
               to={item.url}
+              preload="intent"
               className={[
                 "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors",
                 active

@@ -1,0 +1,15 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { WorkspaceRoleGuard } from "@/components/auth/WorkspaceRoleGuard";
+import { UserShell } from "@/components/layout/UserShell";
+
+export const Route = createFileRoute("/user/_portal")({
+  component: EmployeePortalLayout,
+});
+
+function EmployeePortalLayout() {
+  return (
+    <WorkspaceRoleGuard workspace="employee">
+      <UserShell />
+    </WorkspaceRoleGuard>
+  );
+}

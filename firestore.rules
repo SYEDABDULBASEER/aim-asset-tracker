@@ -1,0 +1,56 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function hasWriteRole() {
+      return isSignedIn() && request.auth.token.role in ['admin', 'agent'];
+    }
+
+    function hasAdminRole() {
+      return isSignedIn() && request.auth.token.role == 'admin';
+    }
+
+    match /assets/{assetId} {
+      allow read: if isSignedIn();
+      allow write: if hasWriteRole();
+    }
+
+    match /tickets/{ticketId} {
+      allow read: if isSignedIn();
+      allow write: if hasWriteRole();
+    }
+
+    match /transfers/{transferId} {
+      allow read: if isSignedIn();
+      allow write: if hasWriteRole();
+    }
+
+    match /maintenanceJobs/{jobId} {
+      allow read: if isSignedIn();
+      allow write: if hasWriteRole();
+    }
+
+    match /employees/{employeeId} {
+      allow read: if isSignedIn();
+      allow write: if hasAdminRole();
+    }
+
+    match /vendors/{vendorId} {
+      allow read: if isSignedIn();
+      allow write: if hasAdminRole();
+    }
+
+    match /orgSettings/{settingsId} {
+      allow read: if isSignedIn();
+      allow write: if hasAdminRole();
+    }
+
+    match /auditLogs/{auditId} {
+      allow read: if hasAdminRole();
+      allow write: if false;
+    }
+  }
+}

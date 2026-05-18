@@ -9,61 +9,40 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as VendorsRouteImport } from './routes/vendors'
-import { Route as TicketsRouteImport } from './routes/tickets'
-import { Route as SettingsRouteImport } from './routes/settings'
-import { Route as ScannerRouteImport } from './routes/scanner'
-import { Route as ReportsRouteImport } from './routes/reports'
-import { Route as MaintenanceRouteImport } from './routes/maintenance'
-import { Route as EmployeesRouteImport } from './routes/employees'
-import { Route as AssetsRouteImport } from './routes/assets'
-import { Route as AllocationRouteImport } from './routes/allocation'
+import { Route as SignupRouteImport } from './routes/signup'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AssetsIdRouteImport } from './routes/assets.$id'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as UserSignupRouteImport } from './routes/user/signup'
+import { Route as UserLoginRouteImport } from './routes/user/login'
+import { Route as AdminVendorsRouteImport } from './routes/admin/vendors'
+import { Route as AdminTicketsRouteImport } from './routes/admin/tickets'
+import { Route as AdminSettingsRouteImport } from './routes/admin/settings'
+import { Route as AdminReportsRouteImport } from './routes/admin/reports'
+import { Route as AdminMaintenanceRouteImport } from './routes/admin/maintenance'
+import { Route as AdminEmployeesRouteImport } from './routes/admin/employees'
+import { Route as AdminAssetsRouteImport } from './routes/admin/assets'
+import { Route as AdminAllocationRouteImport } from './routes/admin/allocation'
+import { Route as UserPortalRouteRouteImport } from './routes/user/_portal/route'
+import { Route as UserPortalIndexRouteImport } from './routes/user/_portal/index'
+import { Route as UserPortalRequestSupportRouteImport } from './routes/user/_portal/request-support'
+import { Route as AdminAssetsIdRouteImport } from './routes/admin/assets.$id'
+import { Route as UserPortalTicketsIdRouteImport } from './routes/user/_portal/tickets.$id'
 
-const VendorsRoute = VendorsRouteImport.update({
-  id: '/vendors',
-  path: '/vendors',
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
   getParentRoute: () => rootRouteImport,
 } as any)
-const TicketsRoute = TicketsRouteImport.update({
-  id: '/tickets',
-  path: '/tickets',
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SettingsRoute = SettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ScannerRoute = ScannerRouteImport.update({
-  id: '/scanner',
-  path: '/scanner',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ReportsRoute = ReportsRouteImport.update({
-  id: '/reports',
-  path: '/reports',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MaintenanceRoute = MaintenanceRouteImport.update({
-  id: '/maintenance',
-  path: '/maintenance',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EmployeesRoute = EmployeesRouteImport.update({
-  id: '/employees',
-  path: '/employees',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AssetsRoute = AssetsRouteImport.update({
-  id: '/assets',
-  path: '/assets',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AllocationRoute = AllocationRouteImport.update({
-  id: '/allocation',
-  path: '/allocation',
+const AdminRouteRoute = AdminRouteRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -71,170 +50,251 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AssetsIdRoute = AssetsIdRouteImport.update({
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const UserSignupRoute = UserSignupRouteImport.update({
+  id: '/user/signup',
+  path: '/user/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UserLoginRoute = UserLoginRouteImport.update({
+  id: '/user/login',
+  path: '/user/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminVendorsRoute = AdminVendorsRouteImport.update({
+  id: '/vendors',
+  path: '/vendors',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminTicketsRoute = AdminTicketsRouteImport.update({
+  id: '/tickets',
+  path: '/tickets',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminSettingsRoute = AdminSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminReportsRoute = AdminReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminMaintenanceRoute = AdminMaintenanceRouteImport.update({
+  id: '/maintenance',
+  path: '/maintenance',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminEmployeesRoute = AdminEmployeesRouteImport.update({
+  id: '/employees',
+  path: '/employees',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminAssetsRoute = AdminAssetsRouteImport.update({
+  id: '/assets',
+  path: '/assets',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminAllocationRoute = AdminAllocationRouteImport.update({
+  id: '/allocation',
+  path: '/allocation',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const UserPortalRouteRoute = UserPortalRouteRouteImport.update({
+  id: '/user/_portal',
+  path: '/user',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UserPortalIndexRoute = UserPortalIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => UserPortalRouteRoute,
+} as any)
+const UserPortalRequestSupportRoute =
+  UserPortalRequestSupportRouteImport.update({
+    id: '/request-support',
+    path: '/request-support',
+    getParentRoute: () => UserPortalRouteRoute,
+  } as any)
+const AdminAssetsIdRoute = AdminAssetsIdRouteImport.update({
   id: '/$id',
   path: '/$id',
-  getParentRoute: () => AssetsRoute,
+  getParentRoute: () => AdminAssetsRoute,
+} as any)
+const UserPortalTicketsIdRoute = UserPortalTicketsIdRouteImport.update({
+  id: '/tickets/$id',
+  path: '/tickets/$id',
+  getParentRoute: () => UserPortalRouteRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/allocation': typeof AllocationRoute
-  '/assets': typeof AssetsRouteWithChildren
-  '/employees': typeof EmployeesRoute
-  '/maintenance': typeof MaintenanceRoute
-  '/reports': typeof ReportsRoute
-  '/scanner': typeof ScannerRoute
-  '/settings': typeof SettingsRoute
-  '/tickets': typeof TicketsRoute
-  '/vendors': typeof VendorsRoute
-  '/assets/$id': typeof AssetsIdRoute
+  '/admin': typeof AdminRouteRouteWithChildren
+  '/login': typeof LoginRoute
+  '/signup': typeof SignupRoute
+  '/user': typeof UserPortalRouteRouteWithChildren
+  '/admin/allocation': typeof AdminAllocationRoute
+  '/admin/assets': typeof AdminAssetsRouteWithChildren
+  '/admin/employees': typeof AdminEmployeesRoute
+  '/admin/maintenance': typeof AdminMaintenanceRoute
+  '/admin/reports': typeof AdminReportsRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/admin/tickets': typeof AdminTicketsRoute
+  '/admin/vendors': typeof AdminVendorsRoute
+  '/user/login': typeof UserLoginRoute
+  '/user/signup': typeof UserSignupRoute
+  '/admin/': typeof AdminIndexRoute
+  '/admin/assets/$id': typeof AdminAssetsIdRoute
+  '/user/request-support': typeof UserPortalRequestSupportRoute
+  '/user/': typeof UserPortalIndexRoute
+  '/user/tickets/$id': typeof UserPortalTicketsIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/allocation': typeof AllocationRoute
-  '/assets': typeof AssetsRouteWithChildren
-  '/employees': typeof EmployeesRoute
-  '/maintenance': typeof MaintenanceRoute
-  '/reports': typeof ReportsRoute
-  '/scanner': typeof ScannerRoute
-  '/settings': typeof SettingsRoute
-  '/tickets': typeof TicketsRoute
-  '/vendors': typeof VendorsRoute
-  '/assets/$id': typeof AssetsIdRoute
+  '/login': typeof LoginRoute
+  '/signup': typeof SignupRoute
+  '/admin/allocation': typeof AdminAllocationRoute
+  '/admin/assets': typeof AdminAssetsRouteWithChildren
+  '/admin/employees': typeof AdminEmployeesRoute
+  '/admin/maintenance': typeof AdminMaintenanceRoute
+  '/admin/reports': typeof AdminReportsRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/admin/tickets': typeof AdminTicketsRoute
+  '/admin/vendors': typeof AdminVendorsRoute
+  '/user/login': typeof UserLoginRoute
+  '/user/signup': typeof UserSignupRoute
+  '/admin': typeof AdminIndexRoute
+  '/admin/assets/$id': typeof AdminAssetsIdRoute
+  '/user/request-support': typeof UserPortalRequestSupportRoute
+  '/user': typeof UserPortalIndexRoute
+  '/user/tickets/$id': typeof UserPortalTicketsIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/allocation': typeof AllocationRoute
-  '/assets': typeof AssetsRouteWithChildren
-  '/employees': typeof EmployeesRoute
-  '/maintenance': typeof MaintenanceRoute
-  '/reports': typeof ReportsRoute
-  '/scanner': typeof ScannerRoute
-  '/settings': typeof SettingsRoute
-  '/tickets': typeof TicketsRoute
-  '/vendors': typeof VendorsRoute
-  '/assets/$id': typeof AssetsIdRoute
+  '/admin': typeof AdminRouteRouteWithChildren
+  '/login': typeof LoginRoute
+  '/signup': typeof SignupRoute
+  '/user/_portal': typeof UserPortalRouteRouteWithChildren
+  '/admin/allocation': typeof AdminAllocationRoute
+  '/admin/assets': typeof AdminAssetsRouteWithChildren
+  '/admin/employees': typeof AdminEmployeesRoute
+  '/admin/maintenance': typeof AdminMaintenanceRoute
+  '/admin/reports': typeof AdminReportsRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/admin/tickets': typeof AdminTicketsRoute
+  '/admin/vendors': typeof AdminVendorsRoute
+  '/user/login': typeof UserLoginRoute
+  '/user/signup': typeof UserSignupRoute
+  '/admin/': typeof AdminIndexRoute
+  '/admin/assets/$id': typeof AdminAssetsIdRoute
+  '/user/_portal/request-support': typeof UserPortalRequestSupportRoute
+  '/user/_portal/': typeof UserPortalIndexRoute
+  '/user/_portal/tickets/$id': typeof UserPortalTicketsIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/allocation'
-    | '/assets'
-    | '/employees'
-    | '/maintenance'
-    | '/reports'
-    | '/scanner'
-    | '/settings'
-    | '/tickets'
-    | '/vendors'
-    | '/assets/$id'
+    | '/admin'
+    | '/login'
+    | '/signup'
+    | '/user'
+    | '/admin/allocation'
+    | '/admin/assets'
+    | '/admin/employees'
+    | '/admin/maintenance'
+    | '/admin/reports'
+    | '/admin/settings'
+    | '/admin/tickets'
+    | '/admin/vendors'
+    | '/user/login'
+    | '/user/signup'
+    | '/admin/'
+    | '/admin/assets/$id'
+    | '/user/request-support'
+    | '/user/'
+    | '/user/tickets/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/allocation'
-    | '/assets'
-    | '/employees'
-    | '/maintenance'
-    | '/reports'
-    | '/scanner'
-    | '/settings'
-    | '/tickets'
-    | '/vendors'
-    | '/assets/$id'
+    | '/login'
+    | '/signup'
+    | '/admin/allocation'
+    | '/admin/assets'
+    | '/admin/employees'
+    | '/admin/maintenance'
+    | '/admin/reports'
+    | '/admin/settings'
+    | '/admin/tickets'
+    | '/admin/vendors'
+    | '/user/login'
+    | '/user/signup'
+    | '/admin'
+    | '/admin/assets/$id'
+    | '/user/request-support'
+    | '/user'
+    | '/user/tickets/$id'
   id:
     | '__root__'
     | '/'
-    | '/allocation'
-    | '/assets'
-    | '/employees'
-    | '/maintenance'
-    | '/reports'
-    | '/scanner'
-    | '/settings'
-    | '/tickets'
-    | '/vendors'
-    | '/assets/$id'
+    | '/admin'
+    | '/login'
+    | '/signup'
+    | '/user/_portal'
+    | '/admin/allocation'
+    | '/admin/assets'
+    | '/admin/employees'
+    | '/admin/maintenance'
+    | '/admin/reports'
+    | '/admin/settings'
+    | '/admin/tickets'
+    | '/admin/vendors'
+    | '/user/login'
+    | '/user/signup'
+    | '/admin/'
+    | '/admin/assets/$id'
+    | '/user/_portal/request-support'
+    | '/user/_portal/'
+    | '/user/_portal/tickets/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AllocationRoute: typeof AllocationRoute
-  AssetsRoute: typeof AssetsRouteWithChildren
-  EmployeesRoute: typeof EmployeesRoute
-  MaintenanceRoute: typeof MaintenanceRoute
-  ReportsRoute: typeof ReportsRoute
-  ScannerRoute: typeof ScannerRoute
-  SettingsRoute: typeof SettingsRoute
-  TicketsRoute: typeof TicketsRoute
-  VendorsRoute: typeof VendorsRoute
+  AdminRouteRoute: typeof AdminRouteRouteWithChildren
+  LoginRoute: typeof LoginRoute
+  SignupRoute: typeof SignupRoute
+  UserPortalRouteRoute: typeof UserPortalRouteRouteWithChildren
+  UserLoginRoute: typeof UserLoginRoute
+  UserSignupRoute: typeof UserSignupRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/vendors': {
-      id: '/vendors'
-      path: '/vendors'
-      fullPath: '/vendors'
-      preLoaderRoute: typeof VendorsRouteImport
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/tickets': {
-      id: '/tickets'
-      path: '/tickets'
-      fullPath: '/tickets'
-      preLoaderRoute: typeof TicketsRouteImport
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/settings': {
-      id: '/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof SettingsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/scanner': {
-      id: '/scanner'
-      path: '/scanner'
-      fullPath: '/scanner'
-      preLoaderRoute: typeof ScannerRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/reports': {
-      id: '/reports'
-      path: '/reports'
-      fullPath: '/reports'
-      preLoaderRoute: typeof ReportsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/maintenance': {
-      id: '/maintenance'
-      path: '/maintenance'
-      fullPath: '/maintenance'
-      preLoaderRoute: typeof MaintenanceRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/employees': {
-      id: '/employees'
-      path: '/employees'
-      fullPath: '/employees'
-      preLoaderRoute: typeof EmployeesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/assets': {
-      id: '/assets'
-      path: '/assets'
-      fullPath: '/assets'
-      preLoaderRoute: typeof AssetsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/allocation': {
-      id: '/allocation'
-      path: '/allocation'
-      fullPath: '/allocation'
-      preLoaderRoute: typeof AllocationRouteImport
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -244,39 +304,196 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/assets/$id': {
-      id: '/assets/$id'
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/user/signup': {
+      id: '/user/signup'
+      path: '/user/signup'
+      fullPath: '/user/signup'
+      preLoaderRoute: typeof UserSignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/user/login': {
+      id: '/user/login'
+      path: '/user/login'
+      fullPath: '/user/login'
+      preLoaderRoute: typeof UserLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/vendors': {
+      id: '/admin/vendors'
+      path: '/vendors'
+      fullPath: '/admin/vendors'
+      preLoaderRoute: typeof AdminVendorsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/tickets': {
+      id: '/admin/tickets'
+      path: '/tickets'
+      fullPath: '/admin/tickets'
+      preLoaderRoute: typeof AdminTicketsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/settings': {
+      id: '/admin/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AdminSettingsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/reports': {
+      id: '/admin/reports'
+      path: '/reports'
+      fullPath: '/admin/reports'
+      preLoaderRoute: typeof AdminReportsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/maintenance': {
+      id: '/admin/maintenance'
+      path: '/maintenance'
+      fullPath: '/admin/maintenance'
+      preLoaderRoute: typeof AdminMaintenanceRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/employees': {
+      id: '/admin/employees'
+      path: '/employees'
+      fullPath: '/admin/employees'
+      preLoaderRoute: typeof AdminEmployeesRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/assets': {
+      id: '/admin/assets'
+      path: '/assets'
+      fullPath: '/admin/assets'
+      preLoaderRoute: typeof AdminAssetsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/allocation': {
+      id: '/admin/allocation'
+      path: '/allocation'
+      fullPath: '/admin/allocation'
+      preLoaderRoute: typeof AdminAllocationRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/user/_portal': {
+      id: '/user/_portal'
+      path: '/user'
+      fullPath: '/user'
+      preLoaderRoute: typeof UserPortalRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/user/_portal/': {
+      id: '/user/_portal/'
+      path: '/'
+      fullPath: '/user/'
+      preLoaderRoute: typeof UserPortalIndexRouteImport
+      parentRoute: typeof UserPortalRouteRoute
+    }
+    '/user/_portal/request-support': {
+      id: '/user/_portal/request-support'
+      path: '/request-support'
+      fullPath: '/user/request-support'
+      preLoaderRoute: typeof UserPortalRequestSupportRouteImport
+      parentRoute: typeof UserPortalRouteRoute
+    }
+    '/admin/assets/$id': {
+      id: '/admin/assets/$id'
       path: '/$id'
-      fullPath: '/assets/$id'
-      preLoaderRoute: typeof AssetsIdRouteImport
-      parentRoute: typeof AssetsRoute
+      fullPath: '/admin/assets/$id'
+      preLoaderRoute: typeof AdminAssetsIdRouteImport
+      parentRoute: typeof AdminAssetsRoute
+    }
+    '/user/_portal/tickets/$id': {
+      id: '/user/_portal/tickets/$id'
+      path: '/tickets/$id'
+      fullPath: '/user/tickets/$id'
+      preLoaderRoute: typeof UserPortalTicketsIdRouteImport
+      parentRoute: typeof UserPortalRouteRoute
     }
   }
 }
 
-interface AssetsRouteChildren {
-  AssetsIdRoute: typeof AssetsIdRoute
+interface AdminAssetsRouteChildren {
+  AdminAssetsIdRoute: typeof AdminAssetsIdRoute
 }
 
-const AssetsRouteChildren: AssetsRouteChildren = {
-  AssetsIdRoute: AssetsIdRoute,
+const AdminAssetsRouteChildren: AdminAssetsRouteChildren = {
+  AdminAssetsIdRoute: AdminAssetsIdRoute,
 }
 
-const AssetsRouteWithChildren =
-  AssetsRoute._addFileChildren(AssetsRouteChildren)
+const AdminAssetsRouteWithChildren = AdminAssetsRoute._addFileChildren(
+  AdminAssetsRouteChildren,
+)
+
+interface AdminRouteRouteChildren {
+  AdminAllocationRoute: typeof AdminAllocationRoute
+  AdminAssetsRoute: typeof AdminAssetsRouteWithChildren
+  AdminEmployeesRoute: typeof AdminEmployeesRoute
+  AdminMaintenanceRoute: typeof AdminMaintenanceRoute
+  AdminReportsRoute: typeof AdminReportsRoute
+  AdminSettingsRoute: typeof AdminSettingsRoute
+  AdminTicketsRoute: typeof AdminTicketsRoute
+  AdminVendorsRoute: typeof AdminVendorsRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteRouteChildren: AdminRouteRouteChildren = {
+  AdminAllocationRoute: AdminAllocationRoute,
+  AdminAssetsRoute: AdminAssetsRouteWithChildren,
+  AdminEmployeesRoute: AdminEmployeesRoute,
+  AdminMaintenanceRoute: AdminMaintenanceRoute,
+  AdminReportsRoute: AdminReportsRoute,
+  AdminSettingsRoute: AdminSettingsRoute,
+  AdminTicketsRoute: AdminTicketsRoute,
+  AdminVendorsRoute: AdminVendorsRoute,
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
+  AdminRouteRouteChildren,
+)
+
+interface UserPortalRouteRouteChildren {
+  UserPortalRequestSupportRoute: typeof UserPortalRequestSupportRoute
+  UserPortalIndexRoute: typeof UserPortalIndexRoute
+  UserPortalTicketsIdRoute: typeof UserPortalTicketsIdRoute
+}
+
+const UserPortalRouteRouteChildren: UserPortalRouteRouteChildren = {
+  UserPortalRequestSupportRoute: UserPortalRequestSupportRoute,
+  UserPortalIndexRoute: UserPortalIndexRoute,
+  UserPortalTicketsIdRoute: UserPortalTicketsIdRoute,
+}
+
+const UserPortalRouteRouteWithChildren = UserPortalRouteRoute._addFileChildren(
+  UserPortalRouteRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AllocationRoute: AllocationRoute,
-  AssetsRoute: AssetsRouteWithChildren,
-  EmployeesRoute: EmployeesRoute,
-  MaintenanceRoute: MaintenanceRoute,
-  ReportsRoute: ReportsRoute,
-  ScannerRoute: ScannerRoute,
-  SettingsRoute: SettingsRoute,
-  TicketsRoute: TicketsRoute,
-  VendorsRoute: VendorsRoute,
+  AdminRouteRoute: AdminRouteRouteWithChildren,
+  LoginRoute: LoginRoute,
+  SignupRoute: SignupRoute,
+  UserPortalRouteRoute: UserPortalRouteRouteWithChildren,
+  UserLoginRoute: UserLoginRoute,
+  UserSignupRoute: UserSignupRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
