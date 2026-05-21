@@ -1,0 +1,61 @@
+import type { Transfer } from "@/lib/models";
+
+export function buildSeedTransfers(): Transfer[] {
+  return [
+    {
+      id: "TRF-001",
+      assetId: "PC-A01",
+      fromParty: "IT Stock",
+      toParty: "Ahmed Khan",
+      fromEmployeeId: null,
+      toEmployeeId: null,
+      status: "Approved",
+      requestedAt: "2026-05-06T09:00:00.000Z",
+      notes: null,
+    },
+    {
+      id: "TRF-002",
+      assetId: "PC-C01",
+      fromParty: "IT Stock",
+      toParty: "Sarah Ali",
+      fromEmployeeId: null,
+      toEmployeeId: null,
+      status: "Approved",
+      requestedAt: "2026-05-05T11:30:00.000Z",
+      notes: null,
+    },
+    {
+      id: "TRF-003",
+      assetId: "PC-A05",
+      fromParty: "Mohammed Faisal",
+      toParty: "David Mathew",
+      fromEmployeeId: null,
+      toEmployeeId: null,
+      status: "Pending",
+      requestedAt: "2026-05-04T14:15:00.000Z",
+      notes: "Pending manager approval",
+    },
+    {
+      id: "TRF-004",
+      assetId: "PC-C10",
+      fromParty: "HR",
+      toParty: "Finance",
+      fromEmployeeId: null,
+      toEmployeeId: null,
+      status: "Approved",
+      requestedAt: "2026-05-02T08:45:00.000Z",
+      notes: null,
+    },
+    {
+      id: "TRF-005",
+      assetId: "PC-A01",
+      fromParty: "Stock",
+      toParty: "Priya Sharma",
+      fromEmployeeId: null,
+      toEmployeeId: null,
+      status: "Rejected",
+      requestedAt: "2026-04-30T16:20:00.000Z",
+      notes: "Budget hold",
+    },
+  ];
+}
