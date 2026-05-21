@@ -36,8 +36,14 @@ export function PortalIdentityCard() {
                 <p className="text-xs text-muted-foreground mt-0.5">Desk {deskNumber}</p>
               ) : null}
               <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">
-                Tickets raised with this work email appear below. Use the same email when submitting
-                new requests.
+                Tickets raised with this work email appear below. This portal does not use your IT
+                Firebase account at /login.
+              </p>
+              <p className="text-[11px] text-amber-700/90 dark:text-amber-400/90 mt-1.5 leading-relaxed">
+                Privacy: your name and email are stored in this browser only (local storage). They
+                are not sent to Firebase as an employee login. Signing out of the IT workspace in the
+                same browser does not change this portal identity unless you choose “Use a different
+                email.”
               </p>
             </div>
           </div>
@@ -64,8 +70,12 @@ export function PortalIdentityCard() {
         <div>
           <h2 className="text-sm font-semibold">Your work email</h2>
           <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-            Enter the email you use at work so we can show only your support requests. It is stored
-            on this device only (no password required).
+            Enter the email you use at work so we can show only your support requests. It is saved in
+            this browser only — not a Firebase employee account.
+          </p>
+          <p className="text-[11px] text-amber-700/90 dark:text-amber-400/90 mt-1.5 leading-relaxed">
+            IT staff sign-in at /login is separate. Your portal identity stays on this device until you
+            clear it or use private browsing.
           </p>
         </div>
       </div>

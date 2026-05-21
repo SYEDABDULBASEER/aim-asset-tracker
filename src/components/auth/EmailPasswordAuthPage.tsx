@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { Boxes, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { formatAuthFormError } from "@/lib/auth/form-errors";
-import { ADMIN_HOME_PATH, LANDING_PATH } from "@/lib/auth/routing";
+import { LANDING_PATH, resolveStaffLoginRedirect } from "@/lib/auth/routing";
 import { AuthSessionCard } from "@/components/auth/AuthSessionCard";
 import { firebaseAuthRequired } from "@/lib/firebase/env";
 
@@ -16,6 +16,8 @@ import { firebaseAuthRequired } from "@/lib/firebase/env";
 export function StaffLoginPage() {
   const auth = useAuth();
   const navigate = useNavigate();
+  const search = useSearch({ strict: false });
+  const redirect = typeof search.redirect === "string" ? search.redirect : undefined;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -30,7 +32,7 @@ export function StaffLoginPage() {
     try {
       await auth.signIn(email, password);
       toast.success("Signed in");
-      await navigate({ to: ADMIN_HOME_PATH, replace: true });
+      await navigate({ to: resolveStaffLoginRedirect(redirect), replace: true });
     } catch (error) {
       const raw = error instanceof Error ? error.message : "Authentication failed.";
       toast.error(formatAuthFormError(raw));
@@ -40,7 +42,10 @@ export function StaffLoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-muted/40 to-background px-4 py-12">
+    <main
+      id="main-content"
+      className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-muted/40 to-background px-4 py-12"
+    >
       <Link
         to={LANDING_PATH}
         className="flex items-center gap-2.5 mb-8 hover:opacity-90 transition-opacity"
@@ -77,13 +82,19 @@ export function StaffLoginPage() {
           </p>
         )}
 
-        <form onSubmit={(e) => void handleSubmit(e)} className="mt-5 space-y-4">
+        <form
+          onSubmit={(e) => void handleSubmit(e)}
+          className="mt-5 space-y-4"
+          aria-busy={busy}
+          aria-label="IT staff sign in"
+        >
           <div className="space-y-1.5">
             <Label htmlFor="auth-email">Email</Label>
             <Input
               id="auth-email"
               type="email"
               autoComplete="email"
+              autoFocus
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -102,11 +113,11 @@ export function StaffLoginPage() {
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
-          <Button type="submit" className="w-full gap-2" disabled={busy}>
+          <Button type="submit" className="w-full gap-2" disabled={busy} aria-disabled={busy}>
             {busy ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Please wait…
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                <span>Please wait…</span>
               </>
             ) : (
               "Sign in"
@@ -120,7 +131,7 @@ export function StaffLoginPage() {
           </Link>
         </p>
       </Card>
-    </div>
+    </main>
   );
 }
 

@@ -11,15 +11,7 @@ export type UserTicketSummary = {
   updatedAt: string;
 };
 
-export function ticketStatusTone(
-  status: TicketStatus,
-): "success" | "warning" | "info" | "danger" | "muted" {
-  if (status === "Resolved") return "success";
-  if (status === "Open" || status === "In Progress") return "info";
-  if (status === "Waiting Parts") return "warning";
-  if (status === "Closed") return "muted";
-  return "info";
-}
+export { ticketStatusToneFromEnum as ticketStatusTone } from "@/lib/ui/status-tones";
 
 export function normalizeEmail(email: string | null | undefined): string | null {
   const v = email?.trim().toLowerCase();

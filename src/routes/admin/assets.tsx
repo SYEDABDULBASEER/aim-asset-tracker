@@ -1,5 +1,10 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { Card, PageHeader } from "@/components/ui-kit/Card";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { Card, PageHeader, StatusPill } from "@/components/ui-kit/Card";
+import { EmptyState } from "@/components/ui-kit/EmptyState";
+import { ListPageSkeleton } from "@/components/ui-kit/ListPageSkeleton";
+import { PageShell } from "@/components/ui-kit/PageShell";
+import { TableCard } from "@/components/ui-kit/TableCard";
+import { AuthStatusBanner } from "@/components/auth/AuthStatusBanner";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -25,8 +30,16 @@ import {
   updateAsset,
 } from "@/utils/assets.functions";
 import { parseAssetImportCsv } from "@/utils/asset-import";
+import { formatAssetsQueryError } from "@/lib/auth/list-query-error";
 import { callAuthenticatedServerFn } from "@/lib/auth/authenticated-server-fn";
-import { useAuthQueryEnabled, useCanWriteAssets, useIsAdmin } from "@/lib/auth/AuthProvider";
+import { assetStatusTone } from "@/lib/ui/status-tones";
+import { destructiveAlertActionClass, destructiveIconButtonClass } from "@/lib/ui/button-hierarchy";
+import {
+  useAuth,
+  useAuthQueryEnabled,
+  useCanWriteAssets,
+  useIsAdmin,
+} from "@/lib/auth/AuthProvider";
 import type { Asset, AssetCategory, AssetStatus, WarrantyBand } from "@/lib/models";
 import {
   AssetFormDialog,
@@ -157,21 +170,22 @@ function toNullableDate(value: string) {
   return trimmed ? trimmed : null;
 }
 
-function formatQueryError(error: unknown) {
-  const message = error instanceof Error ? error.message : "Unknown error";
-  if (message.includes("<!doctype html") || message.includes("This page didn't load")) {
-    return "The assets service returned an unexpected error. Refresh the page or restart the dev server.";
-  }
-  if (message.includes("invalid_enum_value") && message.includes("Servers")) {
-    return "Some assets still use the old category “Servers”. Refresh the page; they are shown as Desktop.";
-  }
-  if (message.startsWith("[") && message.includes("invalid_enum_value")) {
-    return "Some asset records could not be loaded because they use outdated values. Refresh the page or restart the dev server.";
-  }
-  return message;
+function FilterChip({ label, onRemove }: { label: string; onRemove: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onRemove}
+      className="inline-flex items-center gap-1 h-7 px-2.5 rounded-full border border-primary/30 bg-primary/10 text-xs font-medium text-primary hover:bg-primary/15 transition"
+    >
+      {label}
+      <X className="h-3 w-3" />
+    </button>
+  );
 }
 
 function AssetsPage() {
+  const auth = useAuth();
+  const navigate = useNavigate();
   const isAdmin = useIsAdmin();
   const canWriteAssets = useCanWriteAssets();
   const queryClient = useQueryClient();
@@ -192,6 +206,20 @@ function AssetsPage() {
     setQ(searchQ ?? "");
     setPage(0);
   }, [searchQ]);
+
+  useEffect(() => {
+    const trimmed = q.trim();
+    const urlQ = (searchQ ?? "").trim();
+    if (trimmed === urlQ) return;
+    const timer = window.setTimeout(() => {
+      void navigate({
+        to: "/admin/assets",
+        search: { q: trimmed || undefined },
+        replace: true,
+      });
+    }, 300);
+    return () => window.clearTimeout(timer);
+  }, [navigate, q, searchQ]);
 
   const queryInput = useMemo(
     () => ({
@@ -372,7 +400,7 @@ function AssetsPage() {
   const hasFilters = Boolean(category || department || status || warrantyBand || q.trim());
 
   return (
-    <div className="p-8 max-w-[1600px] mx-auto">
+    <PageShell variant="wide">
       <PageHeader
         title="Assets"
         subtitle={
@@ -427,6 +455,8 @@ function AssetsPage() {
             <Button
               type="button"
               className="h-9 shadow-soft"
+              disabled={!canWriteAssets}
+              title={canWriteAssets ? undefined : "Viewers cannot add assets"}
               onClick={() => {
                 setFormValues(emptyForm());
                 setCreateOpen(true);
@@ -513,43 +543,82 @@ function AssetsPage() {
             </Button>
           )}
         </div>
+        {hasFilters ? (
+          <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-border">
+            {q.trim() ? (
+              <FilterChip label={`Search: ${q.trim()}`} onRemove={() => setQ("")} />
+            ) : null}
+            {category ? (
+              <FilterChip label={`Category: ${category}`} onRemove={() => setCategory("")} />
+            ) : null}
+            {department ? (
+              <FilterChip label={`Department: ${department}`} onRemove={() => setDepartment("")} />
+            ) : null}
+            {status ? (
+              <FilterChip label={`Status: ${status}`} onRemove={() => setStatus("")} />
+            ) : null}
+            {warrantyBand ? (
+              <FilterChip
+                label={`Warranty: ${WARRANTY_BAND_OPTIONS.find((o) => o.value === warrantyBand)?.label ?? warrantyBand}`}
+                onRemove={() => setWarrantyBand("")}
+              />
+            ) : null}
+          </div>
+        ) : null}
       </Card>
 
-      <Card className="overflow-hidden">
-        {isError && (
-          <div className="px-4 py-3 text-sm text-destructive border-b border-border flex flex-wrap items-center gap-3">
-            <span>{formatQueryError(error)}</span>
-            {formatQueryError(error).toLowerCase().includes("sign in required") ||
-            formatQueryError(error).toLowerCase().includes("invalid or expired session") ? (
-              <Button type="button" size="sm" asChild>
-                <Link to="/login">Sign in again</Link>
-              </Button>
-            ) : (
-              <Button type="button" size="sm" variant="outline" onClick={() => void refetch()}>
-                Retry
-              </Button>
-            )}
-          </div>
-        )}
+      {isLoading && assets.length === 0 ? (
+        <ListPageSkeleton rows={8} columns={7} />
+      ) : (
+      <TableCard scrollLabel="Asset inventory">
+        {isError ? (
+          <AuthStatusBanner
+            error={formatAssetsQueryError(error)}
+            onRetry={() => void refetch()}
+            onSignOut={auth.user ? () => void auth.signOut() : undefined}
+          />
+        ) : null}
+        {!isLoading && !isError && assets.length === 0 ? (
+          <EmptyState
+            title={hasFilters ? "No assets match your filters" : "No assets yet"}
+            description={
+              hasFilters
+                ? "Try clearing filters or broadening your search."
+                : "Add your first asset or import a CSV to populate inventory."
+            }
+            action={
+              canWriteAssets && !hasFilters ? (
+                <Button
+                  type="button"
+                  className="h-9 shadow-soft"
+                  onClick={() => {
+                    setFormValues(emptyForm());
+                    setCreateOpen(true);
+                  }}
+                >
+                  <Plus className="h-4 w-4" />
+                  Add asset
+                </Button>
+              ) : undefined
+            }
+          />
+        ) : (
         <table className="w-full text-sm">
           <thead className="bg-muted/50">
             <tr className="text-[11px] uppercase tracking-wider text-muted-foreground">
-              <th className="text-left font-medium px-4 py-3">
-                <input type="checkbox" className="accent-[var(--primary)]" />
-              </th>
               <th className="text-left font-medium px-4 py-3">Asset ID</th>
-              <th className="text-left font-medium px-4 py-3">S No</th>
               <th className="text-left font-medium px-4 py-3">Name</th>
-              <th className="text-left font-medium px-4 py-3">Desk</th>
+              <th className="text-left font-medium px-4 py-3 hidden md:table-cell">Status</th>
+              <th className="text-left font-medium px-4 py-3 hidden md:table-cell">Category</th>
+              <th className="text-left font-medium px-4 py-3 hidden md:table-cell">Assigned to</th>
+              <th className="text-left font-medium px-4 py-3 hidden lg:table-cell">S No</th>
+              <th className="text-left font-medium px-4 py-3 hidden lg:table-cell">Desk</th>
               <th className="px-4 py-3" />
             </tr>
           </thead>
           <tbody>
             {assets.map((a) => (
               <tr key={a.id} className="border-t border-border hover:bg-muted/30 transition">
-                <td className="px-4 py-3">
-                  <input type="checkbox" className="accent-[var(--primary)]" />
-                </td>
                 <td className="px-4 py-3 font-medium">
                   <Link
                     to="/admin/assets/$id"
@@ -560,11 +629,20 @@ function AssetsPage() {
                     {a.id}
                   </Link>
                 </td>
-                <td className="px-4 py-3 text-muted-foreground font-mono text-xs">{a.serial ?? "—"}</td>
                 <td className="px-4 py-3">
                   <AssetNameCell asset={a} />
                 </td>
-                <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{a.location ?? "—"}</td>
+                <td className="px-4 py-3 hidden md:table-cell">
+                  <StatusPill tone={assetStatusTone(a.status)}>{a.status}</StatusPill>
+                </td>
+                <td className="px-4 py-3 text-muted-foreground hidden md:table-cell">{a.category}</td>
+                <td className="px-4 py-3 hidden md:table-cell">{a.assignedTo ?? "—"}</td>
+                <td className="px-4 py-3 text-muted-foreground font-mono text-xs hidden lg:table-cell">
+                  {a.serial ?? "—"}
+                </td>
+                <td className="px-4 py-3 font-mono text-xs text-muted-foreground hidden lg:table-cell">
+                  {a.location ?? "—"}
+                </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center justify-end gap-1">
                     {canWriteAssets ? (
@@ -587,11 +665,11 @@ function AssetsPage() {
                         type="button"
                         variant="outline"
                         size="icon"
-                        className="h-7 w-7"
-                        aria-label={`Delete ${a.id}`}
+                        className={`h-7 w-7 ${destructiveIconButtonClass}`}
+                        aria-label={`Delete asset ${a.id}`}
                         onClick={() => setDeleteTargetId(a.id)}
                       >
-                        <Trash2 className="h-3.5 w-3.5" />
+                        <Trash2 className="h-3.5 w-3.5" aria-hidden />
                       </Button>
                     ) : null}
                   </div>
@@ -600,6 +678,8 @@ function AssetsPage() {
             ))}
           </tbody>
         </table>
+        )}
+        {!isError && assets.length > 0 ? (
         <div className="flex items-center justify-between px-4 py-3 border-t border-border text-xs text-muted-foreground">
           <span>
             Showing {total === 0 ? 0 : page * PAGE_SIZE + 1}–
@@ -636,7 +716,9 @@ function AssetsPage() {
             </button>
           </div>
         </div>
-      </Card>
+        ) : null}
+      </TableCard>
+      )}
 
       <AssetFormDialog
         open={createOpen}
@@ -686,16 +768,17 @@ function AssetsPage() {
           <AlertDialogFooter>
             <AlertDialogCancel disabled={deleteMut.isPending}>Cancel</AlertDialogCancel>
             <AlertDialogAction
+              className={destructiveAlertActionClass}
               onClick={() => {
                 if (deleteTargetId) deleteMut.mutate(deleteTargetId);
               }}
               disabled={deleteMut.isPending || !deleteTargetId}
             >
-              Delete
+              Delete asset
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </PageShell>
   );
 }

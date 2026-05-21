@@ -1,5 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Card, StatusPill, PageHeader } from "@/components/ui-kit/Card";
+import { EmptyState } from "@/components/ui-kit/EmptyState";
+import { StatCard } from "@/components/ui-kit/StatCard";
+import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
   PieChart,
@@ -41,9 +44,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { PageShell } from "@/components/ui-kit/PageShell";
 import { callAuthenticatedServerFn } from "@/lib/auth/authenticated-server-fn";
-import { useAuthQueryEnabled } from "@/lib/auth/AuthProvider";
+import { useAuth, useAuthQueryEnabled } from "@/lib/auth/AuthProvider";
+import { AuthStatusBanner } from "@/components/auth/AuthStatusBanner";
+import { formatListQueryError } from "@/lib/auth/list-query-error";
 import { getDashboardSummary } from "@/utils/dashboard.functions";
+import { ticketPriorityTone, ticketStatusTone } from "@/lib/ui/status-tones";
 
 const PORTAL_TICKET_POPUP_SEEN_KEY = "assetdesk.portalTicketPopupSeen.v1";
 
@@ -80,14 +87,6 @@ export const Route = createFileRoute("/admin/")({
   component: Dashboard,
 });
 
-const pieDataFallback = [
-  { name: "Laptop", value: 480 },
-  { name: "Monitor", value: 312 },
-  { name: "Printer", value: 88 },
-  { name: "Mobile", value: 196 },
-  { name: "Network", value: 124 },
-  { name: "Desktop", value: 84 },
-];
 const PIE_COLORS = [
   "var(--chart-1)",
   "var(--chart-2)",
@@ -97,33 +96,21 @@ const PIE_COLORS = [
   "var(--info)",
 ];
 
-function priorityTone(p: string) {
-  const v =
-    p === "Critical" ? "danger" : p === "High" ? "warning" : p === "Medium" ? "info" : "muted";
-  return (v satisfies Parameters<typeof StatusPill>[0]["tone"]) ? v : "muted";
-}
-function statusTone(s: string) {
-  const v =
-    s === "Resolved"
-      ? "success"
-      : s === "Open" || s === "In Progress"
-        ? "info"
-        : s === "Waiting Parts"
-          ? "warning"
-          : s === "Closed"
-            ? "muted"
-            : "muted";
-  return (v satisfies Parameters<typeof StatusPill>[0]["tone"]) ? v : "muted";
-}
-
 function Dashboard() {
+  const auth = useAuth();
   const navigate = useNavigate();
   const [popupQueue, setPopupQueue] = useState<PortalTicketPopup[]>([]);
   const activePopup = popupQueue[0] ?? null;
 
   const authReady = useAuthQueryEnabled();
 
-  const { data: summary, isLoading } = useQuery({
+  const {
+    data: summary,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ["dashboard-summary"],
     queryFn: () => callAuthenticatedServerFn(getDashboardSummary),
     enabled: authReady,
@@ -164,6 +151,14 @@ function Dashboard() {
     [activePopup, navigate],
   );
 
+  const dismissAllPortalPopups = useCallback(() => {
+    const seen = loadSeenPortalPopupIds();
+    for (const ticket of portalOpen) seen.add(ticket.id);
+    for (const popup of popupQueue) seen.add(popup.id);
+    saveSeenPortalPopupIds(seen);
+    setPopupQueue([]);
+  }, [portalOpen, popupQueue]);
+
   const ticketVolume = useMemo(
     () => summary?.tickets.volumeLast7Days ?? [],
     [summary?.tickets.volumeLast7Days],
@@ -178,6 +173,14 @@ function Dashboard() {
     [ticketVolume],
   );
   const hasMaintenanceVolume = maintenanceVolume.some((point) => point.tickets > 0);
+  const hasTicketVolume = ticketVolume.some(
+    (point) => (point.Open ?? 0) > 0 || (point.Resolved ?? 0) > 0,
+  );
+
+  const pieData = summary?.byCategory ?? [];
+  const hasPieData = pieData.some((slice) => slice.value > 0);
+  const recentTickets = summary?.tickets.recent ?? [];
+  const riskAlerts = summary?.alerts ?? [];
 
   const totals = summary?.totals;
   const kpis = [
@@ -243,17 +246,15 @@ function Dashboard() {
     },
   ];
 
-  const pieData = summary?.byCategory?.length ? summary.byCategory : pieDataFallback;
-
   return (
-    <div className="p-8 max-w-[1600px] mx-auto">
+    <PageShell variant="wide">
       <AlertDialog
         open={activePopup !== null}
         onOpenChange={(open) => {
           if (!open) dismissPortalPopup(false);
         }}
       >
-        <AlertDialogContent className="max-w-md">
+        <AlertDialogContent className="w-[calc(100vw-2rem)] max-w-md max-h-[min(90dvh,28rem)] overflow-y-auto sm:mx-auto">
           <AlertDialogHeader>
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
@@ -284,8 +285,13 @@ function Dashboard() {
               ) : null}
             </div>
           ) : null}
-          <AlertDialogFooter>
+          <AlertDialogFooter className="flex-col-reverse gap-2 sm:flex-row sm:justify-end">
             <AlertDialogCancel onClick={() => dismissPortalPopup(false)}>Dismiss</AlertDialogCancel>
+            {popupQueue.length > 1 ? (
+              <Button type="button" variant="outline" onClick={dismissAllPortalPopups}>
+                Dismiss all ({popupQueue.length})
+              </Button>
+            ) : null}
             <AlertDialogAction onClick={() => dismissPortalPopup(true)}>
               Open ticket queue
             </AlertDialogAction>
@@ -301,6 +307,15 @@ function Dashboard() {
             : "Executive view of asset health, risk, and operational load."
         }
       />
+
+      {isError ? (
+        <AuthStatusBanner
+          error={formatListQueryError(error)}
+          onRetry={() => void refetch()}
+          onSignOut={auth.user ? () => void auth.signOut() : undefined}
+          className="mb-6 rounded-lg border border-border"
+        />
+      ) : null}
 
       {portalOpen.length > 0 && (
         <Card className="p-5 mb-6 border-primary/30 bg-primary/5">
@@ -341,25 +356,20 @@ function Dashboard() {
 
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-7 gap-4 mb-6">
         {kpis.map((k) => (
-          <Card key={k.label} className="p-5">
-            <div className="flex items-start justify-between">
-              <div className="h-9 w-9 rounded-lg bg-muted flex items-center justify-center">
-                <k.icon className="h-4 w-4 text-foreground" />
-              </div>
+          <StatCard
+            key={k.label}
+            label={k.label}
+            value={k.value}
+            icon={k.icon}
+            badge={
               <span
-                className={`inline-flex items-center text-[11px] font-medium ${k.up ? "text-success" : "text-destructive"}`}
+                className={`inline-flex items-center gap-0.5 text-[11px] font-medium ${k.up ? "text-success" : "text-destructive"}`}
               >
-                {k.up ? (
-                  <ArrowUpRight className="h-3 w-3" />
-                ) : (
-                  <ArrowDownRight className="h-3 w-3" />
-                )}
+                {k.up ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
                 {k.delta}
               </span>
-            </div>
-            <div className="mt-4 text-2xl font-semibold tracking-tight">{k.value}</div>
-            <div className="text-xs text-muted-foreground mt-1">{k.label}</div>
-          </Card>
+            }
+          />
         ))}
       </div>
 
@@ -410,18 +420,12 @@ function Dashboard() {
             </Link>
           </div>
           <ul className="space-y-3">
-            {(
-              summary?.alerts ?? [
-                {
-                  tone: "info",
-                  title: "No critical alerts detected",
-                  detail:
-                    "Once assets/tickets are fully connected, this panel will surface real-time risk signals.",
-                },
-              ]
-            )
-              .slice(0, 5)
-              .map((a) => (
+            {riskAlerts.length === 0 ? (
+              <li className="text-sm text-muted-foreground border border-dashed border-border rounded-lg p-4">
+                No risk or compliance alerts right now.
+              </li>
+            ) : (
+              riskAlerts.slice(0, 5).map((a) => (
                 <li key={a.title} className="border border-border rounded-lg p-3">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
@@ -443,7 +447,8 @@ function Dashboard() {
                     </div>
                   )}
                 </li>
-              ))}
+              ))
+            )}
           </ul>
         </Card>
       </div>
@@ -454,40 +459,65 @@ function Dashboard() {
             <h3 className="text-sm font-semibold">Asset Distribution</h3>
             <span className="text-xs text-muted-foreground">By category</span>
           </div>
-          <div className="h-64">
-            <ResponsiveContainer>
-              <PieChart>
-                <Pie
-                  data={pieData}
-                  dataKey="value"
-                  innerRadius={55}
-                  outerRadius={85}
-                  paddingAngle={2}
-                  stroke="none"
-                >
-                  {pieData.map((_, i) => (
-                    <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  contentStyle={{
-                    borderRadius: 8,
-                    border: "1px solid var(--border)",
-                    fontSize: 12,
-                  }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="grid grid-cols-2 gap-2 mt-2">
-            {pieData.map((d, i) => (
-              <div key={d.name} className="flex items-center gap-2 text-xs">
-                <span className="h-2 w-2 rounded-full" style={{ background: PIE_COLORS[i] }} />
-                <span className="text-muted-foreground">{d.name}</span>
-                <span className="ml-auto font-medium">{d.value}</span>
+          {hasPieData ? (
+            <>
+              <div className="h-64">
+                <ResponsiveContainer>
+                  <PieChart>
+                    <Pie
+                      data={pieData}
+                      dataKey="value"
+                      innerRadius={55}
+                      outerRadius={85}
+                      paddingAngle={2}
+                      stroke="none"
+                    >
+                      {pieData.map((_, i) => (
+                        <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{
+                        borderRadius: 8,
+                        border: "1px solid var(--border)",
+                        fontSize: 12,
+                      }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
               </div>
-            ))}
-          </div>
+              <div className="grid grid-cols-2 gap-2 mt-2">
+                {pieData.map((d, i) => (
+                  <div key={d.name} className="flex items-center gap-2 text-xs">
+                    <span
+                      className="h-2 w-2 rounded-full"
+                      style={{ background: PIE_COLORS[i % PIE_COLORS.length] }}
+                    />
+                    <span className="text-muted-foreground">{d.name}</span>
+                    <span className="ml-auto font-medium">{d.value}</span>
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            <EmptyState
+              icon={Package}
+              title="No assets to chart"
+              description={
+                isLoading
+                  ? "Loading inventory breakdown…"
+                  : "Add assets or import inventory to see category distribution."
+              }
+              className="py-10"
+              action={
+                !isLoading ? (
+                  <Button type="button" variant="outline" size="sm" asChild>
+                    <Link to="/admin/assets">Go to assets</Link>
+                  </Button>
+                ) : undefined
+              }
+            />
+          )}
         </Card>
 
         <Card className="p-6 lg:col-span-2">
@@ -504,47 +534,61 @@ function Dashboard() {
               </span>
             </div>
           </div>
-          <div className="h-64">
-            <ResponsiveContainer>
-              <BarChart
-                data={ticketVolume.length ? ticketVolume : [{ day: "—", Open: 0, Resolved: 0 }]}
-                barGap={6}
-              >
-                <CartesianGrid vertical={false} stroke="var(--border)" />
-                <XAxis
-                  dataKey="day"
-                  stroke="var(--muted-foreground)"
-                  fontSize={11}
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <YAxis
-                  stroke="var(--muted-foreground)"
-                  fontSize={11}
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <Tooltip
-                  cursor={{ fill: "var(--muted)" }}
-                  contentStyle={{
-                    borderRadius: 8,
-                    border: "1px solid var(--border)",
-                    fontSize: 12,
-                  }}
-                />
-                <Bar dataKey="Open" fill="var(--chart-1)" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="Resolved" fill="var(--chart-2)" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+          {hasTicketVolume ? (
+            <div className="h-64">
+              <ResponsiveContainer>
+                <BarChart data={ticketVolume} barGap={6}>
+                  <CartesianGrid vertical={false} stroke="var(--border)" />
+                  <XAxis
+                    dataKey="day"
+                    stroke="var(--muted-foreground)"
+                    fontSize={11}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <YAxis
+                    stroke="var(--muted-foreground)"
+                    fontSize={11}
+                    tickLine={false}
+                    axisLine={false}
+                    allowDecimals={false}
+                  />
+                  <Tooltip
+                    cursor={{ fill: "var(--muted)" }}
+                    contentStyle={{
+                      borderRadius: 8,
+                      border: "1px solid var(--border)",
+                      fontSize: 12,
+                    }}
+                  />
+                  <Bar dataKey="Open" fill="var(--chart-1)" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="Resolved" fill="var(--chart-2)" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <EmptyState
+              icon={Ticket}
+              title="No ticket activity yet"
+              description="Opened and resolved counts for the last 7 days will appear here."
+              className="py-10"
+              action={
+                <Button type="button" variant="outline" size="sm" asChild>
+                  <Link to="/admin/tickets">Open tickets</Link>
+                </Button>
+              }
+            />
+          )}
         </Card>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
         <Card className="p-6 lg:col-span-2">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1 mb-4">
             <h3 className="text-sm font-semibold">Maintenance workload</h3>
-            <span className="text-xs text-muted-foreground">Ticket volume proxy</span>
+            <p className="text-xs text-muted-foreground max-w-md leading-relaxed">
+              Proxy chart: daily opened + resolved tickets (not scheduled maintenance jobs).
+            </p>
           </div>
           {hasMaintenanceVolume ? (
             <div className="h-56">
@@ -584,9 +628,12 @@ function Dashboard() {
               </ResponsiveContainer>
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground">
-              No ticket volume data yet. This chart appears once service desk activity is recorded.
-            </p>
+            <EmptyState
+              icon={Wrench}
+              title="No workload data yet"
+              description="This line uses ticket volume as a proxy until maintenance jobs are charted separately."
+              className="py-8"
+            />
           )}
         </Card>
 
@@ -631,39 +678,70 @@ function Dashboard() {
             View all
           </Link>
         </div>
-        <div className="overflow-x-auto -mx-6">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                <th className="text-left font-medium px-6 py-2">Ticket</th>
-                <th className="text-left font-medium px-6 py-2">Title</th>
-                <th className="text-left font-medium px-6 py-2">Asset</th>
-                <th className="text-left font-medium px-6 py-2">Priority</th>
-                <th className="text-left font-medium px-6 py-2">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {(summary?.tickets.recent ?? []).map((t) => (
-                <tr key={t.id} className="border-t border-border hover:bg-muted/40 transition">
-                  <td className="px-6 py-3 font-medium">
-                    <Link to="/admin/tickets" className="hover:text-primary hover:underline">
-                      {t.id}
-                    </Link>
-                  </td>
-                  <td className="px-6 py-3">{t.title}</td>
-                  <td className="px-6 py-3 text-muted-foreground">{t.assetId ?? "—"}</td>
-                  <td className="px-6 py-3">
-                    <StatusPill tone={priorityTone(t.priority)}>{t.priority}</StatusPill>
-                  </td>
-                  <td className="px-6 py-3">
-                    <StatusPill tone={statusTone(t.status)}>{t.status}</StatusPill>
-                  </td>
+        {recentTickets.length === 0 ? (
+          <EmptyState
+            icon={Ticket}
+            title="No recent tickets"
+            description="New and updated tickets from the queue will show up here."
+            action={
+              <Button type="button" variant="outline" size="sm" asChild>
+                <Link to="/admin/tickets">View ticket queue</Link>
+              </Button>
+            }
+          />
+        ) : (
+          <div
+            className="overflow-x-auto overscroll-x-contain -mx-6"
+            role="region"
+            aria-label="Recent tickets"
+            tabIndex={0}
+          >
+            <table className="w-full text-sm min-w-[640px]">
+              <thead>
+                <tr className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                  <th className="text-left font-medium px-6 py-2">Ticket</th>
+                  <th className="text-left font-medium px-6 py-2">Title</th>
+                  <th className="text-left font-medium px-6 py-2">Asset</th>
+                  <th className="text-left font-medium px-6 py-2">Priority</th>
+                  <th className="text-left font-medium px-6 py-2">Status</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {recentTickets.map((t) => (
+                  <tr key={t.id} className="border-t border-border hover:bg-muted/40 transition">
+                    <td className="px-6 py-3 font-medium">
+                      <Link to="/admin/tickets" className="hover:text-primary hover:underline">
+                        {t.id}
+                      </Link>
+                    </td>
+                    <td className="px-6 py-3">{t.title}</td>
+                    <td className="px-6 py-3 text-muted-foreground">
+                      {t.assetId ? (
+                        <Link
+                          to="/admin/assets/$id"
+                          params={{ id: t.assetId }}
+                          search={{ q: undefined }}
+                          className="font-mono text-xs text-primary hover:underline"
+                        >
+                          {t.assetId}
+                        </Link>
+                      ) : (
+                        "—"
+                      )}
+                    </td>
+                    <td className="px-6 py-3">
+                      <StatusPill tone={ticketPriorityTone(t.priority)}>{t.priority}</StatusPill>
+                    </td>
+                    <td className="px-6 py-3">
+                      <StatusPill tone={ticketStatusTone(t.status)}>{t.status}</StatusPill>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </Card>
-    </div>
+    </PageShell>
   );
 }

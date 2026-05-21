@@ -1,61 +1,24 @@
 import type { Transfer } from "@/lib/models";
+import { EMPLOYEE_ROSTER, pcNoToAssetId } from "./seed.employee-roster";
 
 export function buildSeedTransfers(): Transfer[] {
-  return [
-    {
-      id: "TRF-001",
-      assetId: "PC-A01",
+  const now = "2026-05-21T10:00:00.000Z";
+  const out: Transfer[] = [];
+  EMPLOYEE_ROSTER.forEach((row, index) => {
+    if (!row.pcNo) return;
+    const assetId = pcNoToAssetId(row.pcNo);
+    if (!assetId) return;
+    out.push({
+      id: `TRF-${String(out.length + 1).padStart(3, "0")}`,
+      assetId,
       fromParty: "IT Stock",
-      toParty: "Ahmed Khan",
+      toParty: row.name,
       fromEmployeeId: null,
-      toEmployeeId: null,
+      toEmployeeId: `EMP-${String(index + 1).padStart(3, "0")}`,
       status: "Approved",
-      requestedAt: "2026-05-06T09:00:00.000Z",
-      notes: null,
-    },
-    {
-      id: "TRF-002",
-      assetId: "PC-C01",
-      fromParty: "IT Stock",
-      toParty: "Sarah Ali",
-      fromEmployeeId: null,
-      toEmployeeId: null,
-      status: "Approved",
-      requestedAt: "2026-05-05T11:30:00.000Z",
-      notes: null,
-    },
-    {
-      id: "TRF-003",
-      assetId: "PC-A05",
-      fromParty: "Mohammed Faisal",
-      toParty: "David Mathew",
-      fromEmployeeId: null,
-      toEmployeeId: null,
-      status: "Pending",
-      requestedAt: "2026-05-04T14:15:00.000Z",
-      notes: "Pending manager approval",
-    },
-    {
-      id: "TRF-004",
-      assetId: "PC-C10",
-      fromParty: "HR",
-      toParty: "Finance",
-      fromEmployeeId: null,
-      toEmployeeId: null,
-      status: "Approved",
-      requestedAt: "2026-05-02T08:45:00.000Z",
-      notes: null,
-    },
-    {
-      id: "TRF-005",
-      assetId: "PC-A01",
-      fromParty: "Stock",
-      toParty: "Priya Sharma",
-      fromEmployeeId: null,
-      toEmployeeId: null,
-      status: "Rejected",
-      requestedAt: "2026-04-30T16:20:00.000Z",
-      notes: "Budget hold",
-    },
-  ];
+      requestedAt: now,
+      notes: "Current desk assignment",
+    });
+  });
+  return out;
 }

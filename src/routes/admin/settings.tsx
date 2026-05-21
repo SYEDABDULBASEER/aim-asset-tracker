@@ -1,29 +1,25 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Card, PageHeader } from "@/components/ui-kit/Card";
+import { EmptyState } from "@/components/ui-kit/EmptyState";
+import { ListPageSkeleton } from "@/components/ui-kit/ListPageSkeleton";
+import { TableCard } from "@/components/ui-kit/TableCard";
+import { PageShell } from "@/components/ui-kit/PageShell";
+import { AuthStatusBanner } from "@/components/auth/AuthStatusBanner";
+import { ReadOnlyRoleBanner } from "@/components/auth/ReadOnlyRoleBanner";
+import { formatListQueryError } from "@/lib/auth/list-query-error";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Database } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import { useAuth } from "@/lib/auth/AuthProvider";
-import {
-  firebaseAuthRequired,
-  getFirebaseWebConfig,
-  isFirebaseConfigured,
-} from "@/lib/firebase/env";
+import { useAuth, useAuthQueryEnabled } from "@/lib/auth/AuthProvider";
 import type { OrgSettings } from "@/lib/models";
 import { callAuthenticatedServerFn } from "@/lib/auth/authenticated-server-fn";
-import { seedFirestoreDemoData } from "@/utils/assets.functions";
 import { listAuditLogs } from "@/utils/audit.functions";
-import {
-  getFirebaseSetupStatus,
-  getOrgSettings,
-  updateOrgSettings,
-} from "@/utils/settings.functions";
+import { getOrgSettings, updateOrgSettings } from "@/utils/settings.functions";
 
 export const Route = createFileRoute("/admin/settings")({
   head: () => ({ meta: [{ title: "Settings — Asset Desk" }] }),
@@ -42,10 +38,11 @@ function listToLines(values: string[]) {
 }
 
 function Settings() {
-  const { role, user } = useAuth();
+  const auth = useAuth();
+  const { role } = auth;
+  const authReady = useAuthQueryEnabled();
   const isAdmin = role === "admin";
   const queryClient = useQueryClient();
-  const [seedMessage, setSeedMessage] = useState<string | null>(null);
   const [categoriesText, setCategoriesText] = useState("");
   const [locationsText, setLocationsText] = useState("");
   const [slaHours, setSlaHours] = useState<OrgSettings["slaHoursByPriority"]>({
@@ -59,24 +56,25 @@ function Settings() {
     inAppEnabled: true,
     webhookEnabled: false,
   });
-  const firebaseOn = isFirebaseConfigured();
-  const authOn = firebaseAuthRequired();
-  const projectId = getFirebaseWebConfig()?.projectId;
-  const { data: firebaseStatus } = useQuery({
-    queryKey: ["firebase-setup-status"],
-    queryFn: () => callAuthenticatedServerFn(getFirebaseSetupStatus),
-    enabled: firebaseOn,
-  });
-  const adminSdkOn = firebaseStatus?.adminSdkConfigured === true;
   const { data: orgSettings, isLoading: settingsLoading } = useQuery({
     queryKey: ["org-settings"],
     queryFn: () => callAuthenticatedServerFn(getOrgSettings),
+    enabled: authReady,
   });
 
-  const { data: auditData, isLoading: auditLoading } = useQuery({
+  const {
+    data: auditData,
+    isLoading: auditLoading,
+    isError: auditError,
+    error: auditErrorDetail,
+    refetch: refetchAudit,
+  } = useQuery({
     queryKey: ["audit-logs"],
     queryFn: () => callAuthenticatedServerFn(listAuditLogs, { data: { limit: 100 } }),
+    enabled: authReady,
   });
+
+  const auditEntries = auditData?.items ?? [];
 
   useEffect(() => {
     if (!orgSettings) return;
@@ -103,69 +101,9 @@ function Settings() {
     onError: (error: Error) => toast.error(error.message ?? "Save failed"),
   });
 
-  const seedMutation = useMutation({
-    mutationFn: () => callAuthenticatedServerFn(seedFirestoreDemoData),
-    onSuccess: (data) => {
-      setSeedMessage(data.message);
-      void queryClient.invalidateQueries();
-    },
-    onError: (error: Error) => {
-      setSeedMessage(error.message ?? "Seed failed");
-    },
-  });
-
   return (
-    <div className="p-8 max-w-[1100px] mx-auto space-y-6">
+    <PageShell variant="narrow" className="space-y-6">
       <PageHeader title="Settings" subtitle="Configure your Asset Desk workspace" />
-
-      <Card className="p-5 border-primary/20 bg-muted/30">
-        <div className="flex items-start gap-4">
-          <div className="h-11 w-11 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
-            <Database className="h-5 w-5 text-primary" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <div className="text-sm font-semibold">Firebase (Firestore & Storage)</div>
-            <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-              {firebaseOn
-                ? `Project: ${projectId}. Server Admin SDK: ${firebaseStatus === undefined ? "checking…" : adminSdkOn ? "configured" : "missing — add FIREBASE_SERVICE_ACCOUNT_PATH in .env and restart npm run dev"}. Auth: ${authOn ? (user ? `signed in (${role})` : "sign in required for IT workspace") : "demo mode (VITE_ALLOW_DEMO_AUTH)"}.${role === "viewer" ? " Viewer is read-only — use auth:set-role for admin or agent." : ""}`
-                : "Firebase env vars are not set. The app uses the in-memory demo store. See FIREBASE_SETUP.md."}
-            </p>
-            {firebaseOn && adminSdkOn && isAdmin && (
-              <div className="mt-3 flex flex-wrap items-center gap-2">
-                <Button
-                  type="button"
-                  size="sm"
-                  disabled={seedMutation.isPending}
-                  onClick={() => {
-                    setSeedMessage(null);
-                    seedMutation.mutate();
-                  }}
-                >
-                  {seedMutation.isPending ? "Seeding…" : "Seed Firestore with demo data"}
-                </Button>
-                <span className="text-[11px] text-muted-foreground">
-                  Seeds assets, tickets, transfers, maintenance, employees, and vendors. Or run{" "}
-                  <code className="text-[10px] bg-muted px-1 rounded">npm run seed:firestore</code> in
-                  the project folder.
-                </span>
-              </div>
-            )}
-            {firebaseOn && adminSdkOn && !isAdmin && (
-              <p className="text-xs mt-3 text-muted-foreground leading-relaxed">
-                Only <strong>admin</strong> users can seed from this page. Your role is{" "}
-                <strong>{role}</strong>. Ask an administrator to run{" "}
-                <code className="text-[10px] bg-muted px-1 rounded">npm run auth:set-role -- your@email admin</code>{" "}
-                then sign in again, or run{" "}
-                <code className="text-[10px] bg-muted px-1 rounded">npm run seed:firestore</code> from
-                the terminal.
-              </p>
-            )}
-            {seedMessage && (
-              <p className="text-xs mt-2 text-foreground whitespace-pre-wrap">{seedMessage}</p>
-            )}
-          </div>
-        </div>
-      </Card>
 
       <Card className="p-6 space-y-5">
         <div>
@@ -174,10 +112,11 @@ function Settings() {
             Categories, locations, SLA targets, and notification defaults.
           </p>
         </div>
+        <ReadOnlyRoleBanner role={role} scope="organization settings" />
         {settingsLoading ? (
           <p className="text-sm text-muted-foreground">Loading settings…</p>
         ) : (
-          <>
+          <fieldset disabled={!isAdmin} className="space-y-5 border-0 p-0 m-0 min-w-0">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="grid gap-1.5">
                 <Label htmlFor="settings-categories">Asset categories</Label>
@@ -186,7 +125,7 @@ function Settings() {
                   value={categoriesText}
                   onChange={(event) => setCategoriesText(event.target.value)}
                   rows={6}
-                  className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
+                  className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm disabled:opacity-60"
                 />
               </div>
               <div className="grid gap-1.5">
@@ -196,7 +135,7 @@ function Settings() {
                   value={locationsText}
                   onChange={(event) => setLocationsText(event.target.value)}
                   rows={6}
-                  className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
+                  className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm disabled:opacity-60"
                 />
               </div>
             </div>
@@ -244,16 +183,17 @@ function Settings() {
             </div>
             <Button
               type="button"
-              disabled={saveSettingsMut.isPending}
+              disabled={saveSettingsMut.isPending || !isAdmin}
+              title={isAdmin ? undefined : "Only administrators can save organization settings"}
               onClick={() => saveSettingsMut.mutate()}
             >
               {saveSettingsMut.isPending ? "Saving…" : "Save settings"}
             </Button>
-          </>
+          </fieldset>
         )}
       </Card>
 
-      <Card className="overflow-hidden">
+      <TableCard scrollLabel="Audit log entries">
           <div className="px-6 py-4 border-b border-border">
             <h3 className="text-sm font-semibold">Audit logs</h3>
             <p className="text-xs text-muted-foreground mt-1">
@@ -261,7 +201,18 @@ function Settings() {
             </p>
           </div>
           {auditLoading ? (
-            <p className="px-6 py-4 text-sm text-muted-foreground">Loading audit logs…</p>
+            <ListPageSkeleton rows={5} columns={4} className="border-0 shadow-none rounded-none" />
+          ) : auditError ? (
+            <AuthStatusBanner
+              error={formatListQueryError(auditErrorDetail)}
+              onRetry={() => void refetchAudit()}
+              onSignOut={auth.user ? () => void auth.signOut() : undefined}
+            />
+          ) : auditEntries.length === 0 ? (
+            <EmptyState
+              title="No audit entries yet"
+              description="Workspace actions will appear here after assets, tickets, or settings change."
+            />
           ) : (
             <table className="w-full text-sm">
               <thead className="bg-muted/50">
@@ -273,7 +224,7 @@ function Settings() {
                 </tr>
               </thead>
               <tbody>
-                {(auditData?.items ?? []).map((entry) => (
+                {auditEntries.map((entry) => (
                   <tr key={entry.id} className="border-t border-border">
                     <td className="px-4 py-3 text-muted-foreground">
                       {format(new Date(entry.createdAt), "dd MMM yyyy HH:mm")}
@@ -290,7 +241,7 @@ function Settings() {
               </tbody>
             </table>
           )}
-        </Card>
-    </div>
+      </TableCard>
+    </PageShell>
   );
 }

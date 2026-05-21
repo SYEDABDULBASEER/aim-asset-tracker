@@ -1,5 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Card, PageHeader } from "@/components/ui-kit/Card";
+import { EmptyState } from "@/components/ui-kit/EmptyState";
+import { ListPageSkeleton } from "@/components/ui-kit/ListPageSkeleton";
+import { PageShell } from "@/components/ui-kit/PageShell";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,13 +14,27 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Pencil, Plus, Trash2, Users } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { useAuth } from "@/lib/auth/AuthProvider";
+import { useAuth, useAuthQueryEnabled } from "@/lib/auth/AuthProvider";
 import type { Employee } from "@/lib/models";
 import { callAuthenticatedServerFn } from "@/lib/auth/authenticated-server-fn";
+import { AuthStatusBanner } from "@/components/auth/AuthStatusBanner";
+import { ReadOnlyRoleBanner } from "@/components/auth/ReadOnlyRoleBanner";
+import { formatListQueryError } from "@/lib/auth/list-query-error";
+import { destructiveAlertActionClass, destructiveIconButtonClass } from "@/lib/ui/button-hierarchy";
 import {
   createEmployee,
   deleteEmployee,
@@ -54,15 +71,18 @@ function employeeToForm(employee: Employee): EmployeeFormValues {
 
 function Employees() {
   const auth = useAuth();
+  const authReady = useAuthQueryEnabled();
   const queryClient = useQueryClient();
   const isAdmin = auth.role === "admin";
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [formValues, setFormValues] = useState<EmployeeFormValues>(emptyEmployeeForm);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["employees"],
     queryFn: () => callAuthenticatedServerFn(listEmployees, { data: { limit: 200, offset: 0 } }),
+    enabled: authReady,
   });
 
   const invalidate = () => {
@@ -103,6 +123,7 @@ function Employees() {
         return;
       }
       toast.success("Employee deleted");
+      setDeleteTargetId(null);
       invalidate();
     },
     onError: (error: Error) => toast.error(error.message ?? "Delete failed"),
@@ -112,7 +133,7 @@ function Employees() {
   const departments = new Set(employees.map((employee) => employee.department)).size;
 
   return (
-    <div className="p-8 max-w-[1600px] mx-auto">
+    <PageShell variant="wide">
       <PageHeader
         title="Employees"
         subtitle={
@@ -121,22 +142,56 @@ function Employees() {
             : `${data?.total ?? employees.length} employees · ${departments} departments`
         }
         action={
-          isAdmin ? (
-            <Button
-              type="button"
-              className="h-9 shadow-soft"
-              onClick={() => {
-                setEditingId(null);
-                setFormValues(emptyEmployeeForm());
-                setDialogOpen(true);
-              }}
-            >
-              <Plus className="h-4 w-4" />
-              Add employee
-            </Button>
-          ) : undefined
+          <Button
+            type="button"
+            className="h-9 shadow-soft"
+            disabled={!isAdmin}
+            title={isAdmin ? undefined : "Only administrators can add employees"}
+            onClick={() => {
+              setEditingId(null);
+              setFormValues(emptyEmployeeForm());
+              setDialogOpen(true);
+            }}
+          >
+            <Plus className="h-4 w-4" />
+            Add employee
+          </Button>
         }
       />
+      <ReadOnlyRoleBanner role={auth.role} scope="employee directory" />
+      {isError ? (
+        <AuthStatusBanner
+          error={formatListQueryError(error)}
+          onRetry={() => void refetch()}
+          onSignOut={auth.user ? () => void auth.signOut() : undefined}
+          className="mb-4 rounded-lg border border-border"
+        />
+      ) : null}
+      {isLoading ? (
+        <ListPageSkeleton rows={6} columns={3} />
+      ) : !isError && employees.length === 0 ? (
+        <EmptyState
+          icon={Users}
+          title="No employees yet"
+          description="Add directory records so assets can be assigned to people and departments."
+          action={
+            isAdmin ? (
+              <Button
+                type="button"
+                className="h-9 shadow-soft"
+                onClick={() => {
+                  setEditingId(null);
+                  setFormValues(emptyEmployeeForm());
+                  setDialogOpen(true);
+                }}
+              >
+                <Plus className="h-4 w-4" />
+                Add employee
+              </Button>
+            ) : undefined
+          }
+        />
+      ) : (
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {employees.map((employee) => (
           <Card key={employee.id} className="p-5 flex items-center gap-4">
@@ -179,11 +234,12 @@ function Employees() {
                     type="button"
                     variant="outline"
                     size="icon"
-                    className="h-7 w-7"
-                    onClick={() => deleteMut.mutate(employee.id)}
+                    className={`h-7 w-7 ${destructiveIconButtonClass}`}
+                    aria-label={`Delete employee ${employee.name}`}
+                    onClick={() => setDeleteTargetId(employee.id)}
                     disabled={deleteMut.isPending}
                   >
-                    <Trash2 className="h-3.5 w-3.5" />
+                    <Trash2 className="h-3.5 w-3.5" aria-hidden />
                   </Button>
                 </div>
               ) : null}
@@ -191,6 +247,37 @@ function Employees() {
           </Card>
         ))}
       </div>
+      )}
+
+      <AlertDialog
+        open={deleteTargetId !== null}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTargetId(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete employee</AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleteTargetId
+                ? `Remove ${deleteTargetId} from the directory. Assigned assets are not deleted.`
+                : "Remove this employee from the directory."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteMut.isPending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className={destructiveAlertActionClass}
+              onClick={() => {
+                if (deleteTargetId) deleteMut.mutate(deleteTargetId);
+              }}
+              disabled={deleteMut.isPending || !deleteTargetId}
+            >
+              Delete employee
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-md">
@@ -254,6 +341,6 @@ function Employees() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </PageShell>
   );
 }

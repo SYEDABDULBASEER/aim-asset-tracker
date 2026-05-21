@@ -2,20 +2,16 @@ import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
 import { Loader2, Ticket, ArrowRight } from "lucide-react";
+import { LoadingIndicator } from "@/components/ui-kit/LoadingIndicator";
 import { Card, StatusPill } from "@/components/ui-kit/Card";
+import { EmptyState } from "@/components/ui-kit/EmptyState";
 import { Button } from "@/components/ui/button";
 import { ticketStatusTone } from "@/lib/tickets/user-portal";
+import { ticketPriorityTone } from "@/lib/ui/status-tones";
 import { USER_REQUEST_SUPPORT_PATH } from "@/lib/auth/routing";
 import { callEmployeePortalServerFn } from "@/lib/auth/authenticated-server-fn";
 import { listMyUserTickets } from "@/utils/tickets.functions";
 import { usePortalRequester } from "@/components/user/PortalRequesterProvider";
-
-function priorityTone(p: string): "danger" | "warning" | "info" | "muted" {
-  if (p === "Critical") return "danger";
-  if (p === "High") return "warning";
-  if (p === "Medium") return "info";
-  return "muted";
-}
 
 function errorMessage(error: unknown): string {
   if (error instanceof Error) return error.message;
@@ -69,17 +65,20 @@ export function UserTicketsPanel() {
           size="sm"
           className="shrink-0 text-xs shadow-sm hover:bg-muted/80"
           disabled={isFetching}
+          aria-busy={isFetching}
+          aria-label={isFetching ? "Refreshing tickets" : "Refresh ticket list"}
           onClick={() => void refetch()}
         >
-          {isFetching ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Refresh"}
+          {isFetching ? (
+            <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
+          ) : (
+            "Refresh"
+          )}
         </Button>
       </div>
 
       {isLoading ? (
-        <div className="flex items-center justify-center gap-2 py-12 text-sm text-muted-foreground font-medium">
-          <Loader2 className="h-4 w-4 animate-spin text-primary" />
-          Loading your tickets…
-        </div>
+        <LoadingIndicator label="Loading your tickets" />
       ) : isError ? (
         <div className="py-4 space-y-2">
           <p className="text-sm text-destructive">{errorMessage(error)}</p>
@@ -88,15 +87,17 @@ export function UserTicketsPanel() {
           </Button>
         </div>
       ) : items.length === 0 ? (
-        <div className="text-center py-8 border border-dashed border-border/40 rounded-xl bg-muted/5">
-          <p className="text-sm text-muted-foreground">
-            No support requests yet for this email.{" "}
-            <Link to={USER_REQUEST_SUPPORT_PATH} className="text-primary font-semibold hover:underline">
-              Raise a ticket
-            </Link>{" "}
-            to get started.
-          </p>
-        </div>
+        <EmptyState
+          icon={Ticket}
+          title="No support requests yet"
+          description={`No tickets found for ${email}. Submit a new request and it will appear here.`}
+          action={
+            <Button type="button" size="sm" asChild>
+              <Link to={USER_REQUEST_SUPPORT_PATH}>Report an issue</Link>
+            </Button>
+          }
+          className="py-8"
+        />
       ) : (
         <div className="space-y-3">
           {items.map((t) => (
@@ -133,7 +134,7 @@ export function UserTicketsPanel() {
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
                   <div className="flex gap-2">
-                    <StatusPill tone={priorityTone(t.priority)}>{t.priority}</StatusPill>
+                    <StatusPill tone={ticketPriorityTone(t.priority)}>{t.priority}</StatusPill>
                     <StatusPill tone={ticketStatusTone(t.status)}>{t.status}</StatusPill>
                   </div>
                   <ArrowRight className="h-4 w-4 text-muted-foreground/60 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />

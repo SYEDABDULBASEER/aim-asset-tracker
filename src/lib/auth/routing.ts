@@ -84,3 +84,11 @@ export function roleAllowedOnStaffLogin(role: AppRole): boolean {
   return isStaffRole(role);
 }
 
+/** Safe internal redirect after IT login (prevents open redirects). */
+export function resolveStaffLoginRedirect(redirect: string | undefined): string {
+  if (!redirect) return ADMIN_HOME_PATH;
+  const trimmed = redirect.trim();
+  if (trimmed.startsWith("/admin")) return trimmed;
+  return ADMIN_HOME_PATH;
+}
+
