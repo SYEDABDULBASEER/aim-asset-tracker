@@ -1,5 +1,11 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Card, PageHeader, StatusPill } from "@/components/ui-kit/Card";
+import { EmptyState } from "@/components/ui-kit/EmptyState";
+import { ListPageSkeleton } from "@/components/ui-kit/ListPageSkeleton";
+import { LoadingIndicator } from "@/components/ui-kit/LoadingIndicator";
+import { TableCard } from "@/components/ui-kit/TableCard";
+import { TicketAssetLink } from "@/components/tickets/TicketAssetLink";
+import { PageShell } from "@/components/ui-kit/PageShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,7 +34,7 @@ import {
   CheckCircle2,
   XCircle,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
@@ -36,7 +42,9 @@ import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import type { Ticket, TicketPriority, TicketStatus } from "@/lib/models";
 import { callAuthenticatedServerFn } from "@/lib/auth/authenticated-server-fn";
-import { useCanWriteTickets } from "@/lib/auth/AuthProvider";
+import { useAuth, useAuthQueryEnabled, useCanWriteTickets } from "@/lib/auth/AuthProvider";
+import { AuthStatusBanner } from "@/components/auth/AuthStatusBanner";
+import { formatListQueryError } from "@/lib/auth/list-query-error";
 import {
   listTickets,
   getTicketById,
@@ -46,8 +54,16 @@ import {
   addTicketComment,
 } from "@/utils/tickets.functions";
 import { listAssets } from "@/utils/assets.functions";
+import { ticketPriorityTone, ticketStatusTone } from "@/lib/ui/status-tones";
+
+type TicketsSearch = {
+  assetId?: string;
+};
 
 export const Route = createFileRoute("/admin/tickets")({
+  validateSearch: (search: Record<string, unknown>): TicketsSearch => ({
+    assetId: typeof search.assetId === "string" ? search.assetId : undefined,
+  }),
   head: () => ({ meta: [{ title: "Tickets — Asset Desk" }] }),
   component: Tickets,
 });
@@ -55,26 +71,6 @@ export const Route = createFileRoute("/admin/tickets")({
 const COLS: TicketStatus[] = ["Open", "In Progress", "Waiting Parts", "Resolved", "Closed"];
 
 const PRIORITIES: TicketPriority[] = ["Critical", "High", "Medium", "Low"];
-
-function priorityTone(p: string) {
-  const v =
-    p === "Critical" ? "danger" : p === "High" ? "warning" : p === "Medium" ? "info" : "muted";
-  return (v satisfies Parameters<typeof StatusPill>[0]["tone"]) ? v : "muted";
-}
-
-function statusTone(s: string) {
-  const v =
-    s === "Resolved"
-      ? "success"
-      : s === "Open" || s === "In Progress"
-        ? "info"
-        : s === "Waiting Parts"
-          ? "warning"
-          : s === "Closed"
-            ? "muted"
-            : "info";
-  return (v satisfies Parameters<typeof StatusPill>[0]["tone"]) ? v : "info";
-}
 
 function initials(name: string) {
   return (
@@ -138,8 +134,12 @@ function TicketStatusSelect({
 }
 
 function Tickets() {
+  const auth = useAuth();
+  const navigate = useNavigate();
+  const authReady = useAuthQueryEnabled();
   const queryClient = useQueryClient();
   const canEditTickets = useCanWriteTickets();
+  const { assetId: prefillAssetId } = Route.useSearch();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [newOpen, setNewOpen] = useState(false);
   const [formTitle, setFormTitle] = useState("");
@@ -158,9 +158,16 @@ function Tickets() {
   const [editRequester, setEditRequester] = useState("");
   const [editAssetId, setEditAssetId] = useState("");
 
-  const { data: listRes, isLoading: listLoading } = useQuery({
+  const {
+    data: listRes,
+    isLoading: listLoading,
+    isError: listError,
+    error: listErrorDetail,
+    refetch: refetchList,
+  } = useQuery({
     queryKey: ["tickets", "list"],
     queryFn: () => callAuthenticatedServerFn(listTickets, { data: { limit: 500, offset: 0 } }),
+    enabled: authReady,
   });
 
   const items = useMemo(() => listRes?.items ?? [], [listRes]);
@@ -210,6 +217,33 @@ function Tickets() {
     queryFn: () => callAuthenticatedServerFn(listAssets, { data: { limit: 200, offset: 0 } }),
   });
   const assetOptions = assetsRes?.items ?? [];
+
+  const ticketPrefillDone = useRef(false);
+
+  useEffect(() => {
+    if (!prefillAssetId || ticketPrefillDone.current) return;
+    ticketPrefillDone.current = true;
+    const linked = assetOptions.find((a) => a.id === prefillAssetId);
+    setFormAssetId(prefillAssetId);
+    setFormTitle(`Issue with ${linked?.name ?? prefillAssetId}`);
+    setFormRequester((current) => current.trim() || auth.user?.email?.split("@")[0] || "");
+    setFormDescription((current) =>
+      current.trim() ? current : `Support request for asset ${prefillAssetId}.`,
+    );
+    setNewOpen(true);
+    void navigate({ to: "/admin/tickets", search: { assetId: undefined }, replace: true });
+  }, [prefillAssetId, assetOptions, navigate, auth.user?.email]);
+
+  useEffect(() => {
+    if (!formAssetId) return;
+    const linked = assetOptions.find((a) => a.id === formAssetId);
+    if (!linked?.name) return;
+    setFormTitle((current) => {
+      const prefix = `Issue with ${formAssetId}`;
+      if (current === prefix) return `Issue with ${linked.name}`;
+      return current;
+    });
+  }, [formAssetId, assetOptions]);
 
   const invalidateTickets = () => {
     void queryClient.invalidateQueries({ queryKey: ["tickets"] });
@@ -306,7 +340,7 @@ function Tickets() {
     : `${openCount} open (excl. closed) · ${slaRisk} SLA breach${slaRisk === 1 ? "" : "es"}`;
 
   return (
-    <div className="p-8 max-w-[1600px] mx-auto">
+    <PageShell variant="wide">
       <PageHeader
         title="Tickets"
         subtitle={subtitle}
@@ -425,13 +459,29 @@ function Tickets() {
         </DialogContent>
       </Dialog>
 
-      {listLoading ? (
-        <div className="flex items-center justify-center py-24 text-muted-foreground gap-2">
-          <Loader2 className="h-5 w-5 animate-spin" />
-          Loading tickets…
-        </div>
-      ) : (
-        <Card className="overflow-hidden border border-border/60 shadow-sm rounded-xl">
+      <TableCard scrollLabel="Support tickets" className="border border-border/60 shadow-sm rounded-xl">
+        {listError ? (
+          <AuthStatusBanner
+            error={formatListQueryError(listErrorDetail)}
+            onRetry={() => void refetchList()}
+            onSignOut={auth.user ? () => void auth.signOut() : undefined}
+          />
+        ) : null}
+        {listLoading ? (
+          <ListPageSkeleton rows={8} columns={8} className="border-0 shadow-none rounded-none" />
+        ) : !listError && items.length === 0 ? (
+          <EmptyState
+            icon={MessageSquare}
+            title="No tickets yet"
+            description="Create a ticket when staff report hardware or software issues."
+            action={
+              <Button size="sm" className="shadow-soft" onClick={() => setNewOpen(true)}>
+                <Plus className="h-4 w-4" />
+                New ticket
+              </Button>
+            }
+          />
+        ) : (
           <table className="w-full text-sm">
             <thead className="bg-muted/40 border-b border-border/60">
               <tr className="text-[11px] uppercase tracking-wider text-muted-foreground">
@@ -470,17 +520,18 @@ function Tickets() {
                     </div>
                   </td>
                   <td className="px-4 py-3.5 font-medium text-foreground">{t.title}</td>
-                  <td className="px-4 py-3.5">
+                  <td className="px-4 py-3.5" onClick={(e) => e.stopPropagation()}>
                     {t.assetId ? (
-                      <span className="font-mono text-xs text-primary bg-primary/5 px-2 py-0.5 border border-primary/10 rounded">
-                        {t.assetId}
-                      </span>
+                      <TicketAssetLink
+                        assetId={t.assetId}
+                        onClick={(e) => e.stopPropagation()}
+                      />
                     ) : (
                       <span className="text-muted-foreground text-xs">—</span>
                     )}
                   </td>
                   <td className="px-4 py-3.5">
-                    <StatusPill tone={priorityTone(t.priority)}>{t.priority}</StatusPill>
+                    <StatusPill tone={ticketPriorityTone(t.priority)}>{t.priority}</StatusPill>
                   </td>
                   <td className="px-4 py-3.5" onClick={(e) => e.stopPropagation()}>
                     {canEditTickets ? (
@@ -492,7 +543,7 @@ function Tickets() {
                         onChange={changeStatus}
                       />
                     ) : (
-                      <StatusPill tone={statusTone(t.status)}>{t.status}</StatusPill>
+                      <StatusPill tone={ticketStatusTone(t.status)}>{t.status}</StatusPill>
                     )}
                   </td>
                   <td className="px-4 py-3.5 text-foreground/80">{t.assigneeName ?? "—"}</td>
@@ -504,17 +555,18 @@ function Tickets() {
               ))}
             </tbody>
           </table>
-        </Card>
-      )}
+        )}
+      </TableCard>
 
       {/* Modern Slide-over Sheet Sidebar for Ticket Details */}
       <Sheet open={Boolean(selectedId)} onOpenChange={(open) => !open && setSelectedId(null)}>
         <SheetContent className="sm:max-w-[650px] w-full p-0 flex flex-col h-full bg-background/95 backdrop-blur-md border-l border-border/80 shadow-2xl">
           {detailLoading ? (
-            <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-3">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <span className="text-sm font-medium">Loading ticket details...</span>
-            </div>
+            <LoadingIndicator
+              label="Loading ticket details"
+              className="h-full min-h-[12rem]"
+              size="md"
+            />
           ) : detail == null ? (
             <div className="flex items-center justify-center h-full p-6 text-muted-foreground">
               Ticket not found or has been removed.
@@ -528,14 +580,21 @@ function Tickets() {
                     {detail.id}
                   </span>
                   <div className="flex gap-2">
-                    <StatusPill tone={priorityTone(detail.priority)}>{detail.priority}</StatusPill>
-                    <StatusPill tone={statusTone(detail.status)}>{detail.status}</StatusPill>
+                    <StatusPill tone={ticketPriorityTone(detail.priority)}>{detail.priority}</StatusPill>
+                    <StatusPill tone={ticketStatusTone(detail.status)}>{detail.status}</StatusPill>
                   </div>
                 </div>
                 
                 <h3 className="text-xl font-bold text-foreground leading-tight tracking-tight">
                   {detail.title}
                 </h3>
+
+                {detail.assetId ? (
+                  <p className="text-xs text-muted-foreground flex flex-wrap items-center gap-1.5">
+                    <span>Linked asset:</span>
+                    <TicketAssetLink assetId={detail.assetId} />
+                  </p>
+                ) : null}
 
                 {/* Quick workflow status selection panel */}
                 <div className="space-y-3 bg-background border border-border/50 rounded-xl p-3 shadow-sm">
@@ -588,19 +647,25 @@ function Tickets() {
 
               {/* Scrollable Content Area with Radix Tabs */}
               <Tabs defaultValue="comments" className="flex-1 flex flex-col overflow-hidden">
-                <div className="px-6 border-b border-border/40 bg-muted/10 shrink-0">
-                  <TabsList className="w-full justify-start gap-6 bg-transparent h-12 p-0 border-b-0">
+                <div className="px-6 border-b border-border/40 bg-muted/10 shrink-0 overflow-x-auto">
+                  <TabsList className="w-full justify-start gap-4 sm:gap-6 bg-transparent h-12 p-0 border-b-0 min-w-max">
                     <TabsTrigger
                       value="comments"
-                      className="h-full rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-1 font-semibold text-sm transition-all"
+                      className="h-full rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-1 font-semibold text-sm transition-all shrink-0"
                     >
-                      Comments & Thread ({detail.messages.length})
+                      Comments ({detail.messages.length})
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="attachments"
+                      className="h-full rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-1 font-semibold text-sm transition-all shrink-0"
+                    >
+                      Attachments
                     </TabsTrigger>
                     <TabsTrigger
                       value="details"
-                      className="h-full rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-1 font-semibold text-sm transition-all"
+                      className="h-full rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-1 font-semibold text-sm transition-all shrink-0"
                     >
-                      Edit & Meta Details
+                      Details
                     </TabsTrigger>
                   </TabsList>
                 </div>
@@ -668,12 +733,10 @@ function Tickets() {
                         />
                       </div>
 
-                      <div className="flex items-center justify-between pt-1">
-                        <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
-                          <Paperclip className="h-3.5 w-3.5 text-muted-foreground/75" />
-                          {detailLocked ? "Comments locked" : "Attachments coming soon"}
-                        </span>
-                        
+                      <div className="flex items-center justify-end pt-1">
+                        {detailLocked ? (
+                          <span className="text-xs text-muted-foreground mr-auto">Comments locked</span>
+                        ) : null}
                         <Button
                           type="button"
                           size="sm"
@@ -696,6 +759,14 @@ function Tickets() {
                         </Button>
                       </div>
                     </div>
+                  </TabsContent>
+
+                  <TabsContent value="attachments" className="mt-0 outline-none">
+                    <EmptyState
+                      icon={Paperclip}
+                      title="No attachments yet"
+                      description="File uploads for tickets are not enabled in this MVP. Use Comments for notes and link an asset under Details."
+                    />
                   </TabsContent>
 
                   {/* Tab Content: Details & Actions */}
@@ -763,6 +834,12 @@ function Tickets() {
                                   ))}
                                 </SelectContent>
                               </Select>
+                              {editAssetId ? (
+                                <TicketAssetLink
+                                  assetId={editAssetId}
+                                  className="text-xs font-medium text-primary hover:underline"
+                                />
+                              ) : null}
                             </div>
                           </div>
 
@@ -843,6 +920,6 @@ function Tickets() {
           )}
         </SheetContent>
       </Sheet>
-    </div>
+    </PageShell>
   );
 }

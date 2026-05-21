@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Boxes, LifeBuoy, LayoutDashboard } from "lucide-react";
 import { Card } from "@/components/ui-kit/Card";
-import { ADMIN_HOME_PATH, USER_HOME_PATH } from "@/lib/auth/routing";
+import { LandingStaffSessionStrip } from "@/components/auth/LandingStaffSessionStrip";
+import { ADMIN_HOME_PATH, STAFF_LOGIN_PATH, USER_HOME_PATH } from "@/lib/auth/routing";
 
 export const Route = createFileRoute("/")({
   head: () => ({ meta: [{ title: "Asset Desk" }] }),
@@ -21,6 +22,8 @@ function HomeChooserPage() {
         </p>
       </div>
 
+      <LandingStaffSessionStrip />
+
       <div className="grid gap-4 w-full max-w-lg sm:grid-cols-2">
         <Link to={USER_HOME_PATH} preload="intent" className="block group">
           <Card className="p-6 h-full border-primary/20 hover:border-primary/40 hover:shadow-md transition-all">
@@ -34,7 +37,12 @@ function HomeChooserPage() {
             </p>
           </Card>
         </Link>
-        <Link to={ADMIN_HOME_PATH} preload="intent" className="block group">
+        <Link
+          to={STAFF_LOGIN_PATH}
+          search={{ redirect: ADMIN_HOME_PATH }}
+          preload="intent"
+          className="block group"
+        >
           <Card className="p-6 h-full hover:shadow-md transition-all">
             <LayoutDashboard className="h-8 w-8 text-muted-foreground mb-3 group-hover:text-primary transition-colors" />
             <h2 className="text-base font-semibold group-hover:text-primary transition-colors">

@@ -1,5 +1,7 @@
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import { Card, PageHeader } from "@/components/ui-kit/Card";
+import { EmptyState } from "@/components/ui-kit/EmptyState";
+import { PageShell } from "@/components/ui-kit/PageShell";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -20,6 +22,8 @@ import {
   ChevronRight,
   Pencil,
   Trash2,
+  ImageIcon,
+  Upload,
   type LucideIcon,
 } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -27,6 +31,7 @@ import { useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { callAuthenticatedServerFn } from "@/lib/auth/authenticated-server-fn";
 import { useIsAdmin } from "@/lib/auth/AuthProvider";
+import { destructiveAlertActionClass, destructiveIconButtonClass } from "@/lib/ui/button-hierarchy";
 import { isFirebaseConfigured } from "@/lib/firebase/env";
 import {
   listAssetDocuments,
@@ -180,7 +185,7 @@ function AssetDetail() {
   }
 
   return (
-    <div className="p-8 max-w-[1600px] mx-auto">
+    <PageShell variant="wide">
       <nav className="flex items-center gap-1.5 text-xs text-muted-foreground mb-4">
         <Link to="/admin/assets" search={{ q: undefined }} className="hover:text-foreground">
           Assets
@@ -223,15 +228,15 @@ function AssetDetail() {
               <Button
                 type="button"
                 variant="outline"
-                className="h-9"
+                className={`h-9 ${destructiveIconButtonClass}`}
                 onClick={() => setDeleteOpen(true)}
               >
-                <Trash2 className="h-4 w-4" />
-                Delete
+                <Trash2 className="h-4 w-4" aria-hidden />
+                Delete asset
               </Button>
             ) : null}
             <Button asChild className="h-9 shadow-soft">
-              <Link to="/admin/tickets">
+              <Link to="/admin/tickets" search={{ assetId: id }}>
                 <Ticket className="h-4 w-4" />
                 Raise Ticket
               </Link>
@@ -243,11 +248,37 @@ function AssetDetail() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           <Card className="p-6">
-            <div className="flex gap-6">
-              <div className="h-40 w-56 rounded-xl bg-gradient-to-br from-muted to-accent flex items-center justify-center text-muted-foreground text-xs">
-                Asset Image
+            <div className="flex flex-col sm:flex-row gap-6">
+              <div className="h-40 w-full sm:w-56 shrink-0 rounded-xl border border-dashed border-border bg-muted/30 overflow-hidden">
+                {storageEnabled ? (
+                  <EmptyState
+                    icon={ImageIcon}
+                    title="No photo yet"
+                    description="Upload a warranty card, handover photo, or invoice via Documents below."
+                    className="py-8 px-4 h-full"
+                    action={
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={uploadDocumentMut.isPending}
+                        onClick={() => uploadRef.current?.click()}
+                      >
+                        <Upload className="h-3.5 w-3.5" />
+                        Upload file
+                      </Button>
+                    }
+                  />
+                ) : (
+                  <EmptyState
+                    icon={ImageIcon}
+                    title="Photos unavailable"
+                    description="Enable Firebase Storage to attach images and documents to this asset."
+                    className="py-8 px-4 h-full"
+                  />
+                )}
               </div>
-              <div className="flex-1 grid grid-cols-1 gap-4 text-sm">
+              <div className="flex-1 grid grid-cols-1 gap-4 text-sm min-w-0">
                 <Field label="Asset ID" value={asset?.id ?? "—"} />
                 <Field label="S No" value={asset?.serial ?? "—"} />
                 <Field label="Name" value={asset?.name ?? "—"} />
@@ -265,14 +296,24 @@ function AssetDetail() {
           </Card>
 
           <Card className="p-6">
-            <h3 className="text-sm font-semibold mb-4">Service & Repair History</h3>
+            <div className="flex items-center justify-between gap-3 mb-4">
+              <h3 className="text-sm font-semibold">Activity timeline</h3>
+              {auditEntries.length > 0 ? (
+                <Button type="button" variant="ghost" size="sm" className="h-8 text-xs" asChild>
+                  <Link to="/admin/settings">View all in Settings</Link>
+                </Button>
+              ) : null}
+            </div>
             {auditLoading ? (
               <p className="text-sm text-muted-foreground">Loading history…</p>
             ) : auditEntries.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No audit history recorded for this asset yet.</p>
+              <EmptyState
+                title="No activity yet"
+                description="Changes to this asset will appear here after edits, transfers, or tickets."
+              />
             ) : (
               <ol className="relative border-l border-border ml-2">
-                {auditEntries.map((entry) => (
+                {auditEntries.slice(0, 12).map((entry) => (
                   <li key={entry.id} className="ml-6 pb-5 last:pb-0">
                     <span className="absolute -left-1.5 h-3 w-3 rounded-full ring-4 ring-card bg-primary" />
                     <div className="text-xs text-muted-foreground">
@@ -280,7 +321,8 @@ function AssetDetail() {
                     </div>
                     <div className="text-sm font-medium mt-0.5">{entry.action}</div>
                     <div className="text-xs text-muted-foreground">
-                      {entry.actorEmail ?? entry.actorUid}
+                      {entry.entityType} · {entry.entityId}
+                      {entry.actorEmail ? ` · ${entry.actorEmail}` : ""}
                     </div>
                   </li>
                 ))}
@@ -320,10 +362,24 @@ function AssetDetail() {
               documentsLoading ? (
                 <p className="text-sm text-muted-foreground">Loading documents…</p>
               ) : documents.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  No files uploaded yet. Use Upload file to store invoices, warranties, or handover
-                  documents in Firebase Storage.
-                </p>
+                <EmptyState
+                  icon={FileText}
+                  title="No documents yet"
+                  description="Upload invoices, warranties, or handover files to Firebase Storage."
+                  className="py-8"
+                  action={
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={uploadDocumentMut.isPending}
+                      onClick={() => uploadRef.current?.click()}
+                    >
+                      <Upload className="h-3.5 w-3.5" />
+                      Upload file
+                    </Button>
+                  }
+                />
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {documents.map((document) => (
@@ -348,10 +404,11 @@ function AssetDetail() {
                 </div>
               )
             ) : (
-              <p className="text-sm text-muted-foreground">
-                Sign in with Firebase Authentication to upload and list asset documents in Cloud
-                Storage.
-              </p>
+              <EmptyState
+                title="Document storage off"
+                description="Configure Firebase in .env to upload invoices, warranties, and handover files for this asset."
+                className="py-8"
+              />
             )}
           </Card>
         </div>
@@ -389,27 +446,19 @@ function AssetDetail() {
           </Card>
 
           <Card className="p-6">
-            <h3 className="text-sm font-semibold mb-4">Activity Log</h3>
-            {auditLoading ? (
-              <p className="text-sm text-muted-foreground">Loading activity…</p>
-            ) : auditEntries.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No activity recorded yet.</p>
-            ) : (
-              <ul className="space-y-3 text-sm">
-                {auditEntries.slice(0, 8).map((entry) => (
-                  <li key={entry.id} className="flex items-start gap-2.5">
-                    <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-primary" />
-                    <div>
-                      <div>{entry.action}</div>
-                      <div className="text-[11px] text-muted-foreground">
-                        {formatDateLabel(entry.createdAt)}
-                        {entry.actorEmail ? ` · ${entry.actorEmail}` : ""}
-                      </div>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
+            <h3 className="text-sm font-semibold mb-2">Recent activity</h3>
+            <p className="text-xs text-muted-foreground mb-4">
+              {auditLoading
+                ? "Loading…"
+                : auditEntries.length === 0
+                  ? "No events recorded for this asset."
+                  : `${auditEntries.length} event${auditEntries.length === 1 ? "" : "s"} in the audit log.`}
+            </p>
+            {auditEntries.length > 0 ? (
+              <Button type="button" variant="outline" className="w-full" asChild>
+                <Link to="/admin/settings">View full audit log</Link>
+              </Button>
+            ) : null}
           </Card>
         </div>
       </div>
@@ -437,13 +486,17 @@ function AssetDetail() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={() => deleteMut.mutate()} disabled={deleteMut.isPending}>
-              Delete
+            <AlertDialogAction
+              className={destructiveAlertActionClass}
+              onClick={() => deleteMut.mutate()}
+              disabled={deleteMut.isPending}
+            >
+              Delete asset
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </PageShell>
   );
 }
 

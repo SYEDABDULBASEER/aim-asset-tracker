@@ -1,5 +1,10 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Card, PageHeader, StatusPill } from "@/components/ui-kit/Card";
+import { TableCard } from "@/components/ui-kit/TableCard";
+import { AssetContextBanner } from "@/components/ui-kit/AssetContextBanner";
+import { EmptyState } from "@/components/ui-kit/EmptyState";
+import { ListPageSkeleton } from "@/components/ui-kit/ListPageSkeleton";
+import { PageShell } from "@/components/ui-kit/PageShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,13 +23,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Calendar, Plus } from "lucide-react";
+import { Calendar, Plus, Wrench } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import type { MaintenanceStatus, MaintenanceType } from "@/lib/models";
 import { callAuthenticatedServerFn } from "@/lib/auth/authenticated-server-fn";
+import { useAuth, useAuthQueryEnabled } from "@/lib/auth/AuthProvider";
+import { AuthStatusBanner } from "@/components/auth/AuthStatusBanner";
+import { formatListQueryError } from "@/lib/auth/list-query-error";
 import {
   createMaintenanceJob,
   listMaintenanceJobs,
@@ -32,6 +40,7 @@ import {
 } from "@/utils/maintenance.functions";
 import { listAssets } from "@/utils/assets.functions";
 import { listVendors } from "@/utils/vendors.functions";
+import { maintenanceStatusTone } from "@/lib/ui/status-tones";
 
 type MaintenanceSearch = {
   assetId?: string;
@@ -47,19 +56,10 @@ export const Route = createFileRoute("/admin/maintenance")({
 
 const TYPES: MaintenanceType[] = ["Preventive", "Repair", "Inspection"];
 
-function tone(status: MaintenanceStatus) {
-  const value =
-    status === "Completed"
-      ? "success"
-      : status === "In Progress"
-        ? "warning"
-        : status === "Cancelled"
-          ? "danger"
-          : "info";
-  return (value satisfies Parameters<typeof StatusPill>[0]["tone"]) ? value : "info";
-}
-
 function Maintenance() {
+  const auth = useAuth();
+  const navigate = useNavigate();
+  const authReady = useAuthQueryEnabled();
   const queryClient = useQueryClient();
   const { assetId: searchAssetId } = Route.useSearch();
   const [createOpen, setCreateOpen] = useState(false);
@@ -69,7 +69,7 @@ function Maintenance() {
   const [formDate, setFormDate] = useState("");
   const [formNotes, setFormNotes] = useState("");
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["maintenance", searchAssetId],
     queryFn: () =>
       callAuthenticatedServerFn(listMaintenanceJobs, {
@@ -79,6 +79,7 @@ function Maintenance() {
           offset: 0,
         },
       }),
+    enabled: authReady,
   });
 
   const { data: assetsRes } = useQuery({
@@ -144,7 +145,7 @@ function Maintenance() {
   });
 
   return (
-    <div className="p-8 max-w-[1600px] mx-auto">
+    <PageShell variant="wide">
       <PageHeader
         title="Maintenance"
         subtitle={isLoading ? "Loading jobs…" : `${data?.total ?? rows.length} maintenance jobs`}
@@ -179,7 +180,42 @@ function Maintenance() {
         ))}
       </div>
 
-      <Card className="overflow-hidden">
+      {searchAssetId ? (
+        <AssetContextBanner
+          assetId={searchAssetId}
+          assetLabel={assetMap.get(searchAssetId)}
+          onClear={() => void navigate({ to: "/admin/maintenance", search: { assetId: undefined } })}
+        />
+      ) : null}
+
+      {isLoading ? (
+        <ListPageSkeleton rows={6} columns={7} />
+      ) : (
+      <TableCard scrollLabel="Maintenance jobs">
+        {isError ? (
+          <AuthStatusBanner
+            error={formatListQueryError(error)}
+            onRetry={() => void refetch()}
+            onSignOut={auth.user ? () => void auth.signOut() : undefined}
+          />
+        ) : null}
+        {!isError && rows.length === 0 ? (
+          <EmptyState
+            icon={Wrench}
+            title="No maintenance jobs"
+            description={
+              searchAssetId
+                ? "No scheduled or completed work for this asset yet."
+                : "Schedule preventive or repair work with your vendor partners."
+            }
+            action={
+              <Button type="button" className="h-9 shadow-soft" onClick={() => setCreateOpen(true)}>
+                <Plus className="h-4 w-4" />
+                Schedule job
+              </Button>
+            }
+          />
+        ) : (
         <table className="w-full text-sm">
           <thead className="bg-muted/50">
             <tr className="text-[11px] uppercase tracking-wider text-muted-foreground">
@@ -212,7 +248,7 @@ function Maintenance() {
                   {format(new Date(row.scheduledAt), "dd MMM yyyy")}
                 </td>
                 <td className="px-4 py-3">
-                  <StatusPill tone={tone(row.status)}>{row.status}</StatusPill>
+                  <StatusPill tone={maintenanceStatusTone(row.status)}>{row.status}</StatusPill>
                 </td>
                 <td className="px-4 py-3">
                   {row.status === "Scheduled" ? (
@@ -241,7 +277,9 @@ function Maintenance() {
             ))}
           </tbody>
         </table>
-      </Card>
+        )}
+      </TableCard>
+      )}
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent className="sm:max-w-md">
@@ -330,6 +368,6 @@ function Maintenance() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </PageShell>
   );
 }

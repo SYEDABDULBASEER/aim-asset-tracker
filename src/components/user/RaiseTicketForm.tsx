@@ -19,6 +19,7 @@ import type { TicketPriority } from "@/lib/models";
 import { callEmployeePortalServerFn } from "@/lib/auth/authenticated-server-fn";
 import { createUserTicket } from "@/utils/tickets.functions";
 import { usePortalRequester } from "@/components/user/PortalRequesterProvider";
+import { SupportFormSteps } from "@/components/user/SupportFormSteps";
 
 const PRIORITIES: TicketPriority[] = ["Critical", "High", "Medium", "Low"];
 
@@ -95,15 +96,19 @@ export function RaiseTicketForm({ onSubmitted, showIdentityFields = true }: Rais
 
   return (
     <Card className="p-6 shadow-soft border-border/80">
+      <SupportFormSteps showIdentity={showIdentityFields} />
       <form
-        className="space-y-4"
+        className="space-y-6"
         onSubmit={(e) => {
           e.preventDefault();
           submitMut.mutate();
         }}
       >
         {showIdentityFields ? (
-          <>
+          <fieldset className="space-y-4 border-0 p-0 m-0 min-w-0">
+            <legend className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 w-full">
+              Step 1 — Identity
+            </legend>
             <div className="space-y-2">
               <Label htmlFor="rs-name">Your name</Label>
               <Input
@@ -144,9 +149,10 @@ export function RaiseTicketForm({ onSubmitted, showIdentityFields = true }: Rais
                 maxLength={50}
               />
             </div>
-          </>
+          </fieldset>
         ) : (
-          <div className="space-y-2">
+          <fieldset className="space-y-2 border-0 p-0 m-0 min-w-0">
+            <legend className="sr-only">Desk</legend>
             <Label htmlFor="rs-desk">Desk number</Label>
             <Input
               id="rs-desk"
@@ -156,9 +162,13 @@ export function RaiseTicketForm({ onSubmitted, showIdentityFields = true }: Rais
               required
               maxLength={50}
             />
-          </div>
+          </fieldset>
         )}
 
+        <fieldset className="space-y-4 border-0 p-0 m-0 min-w-0">
+          <legend className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 w-full">
+            {showIdentityFields ? "Step 2 — Issue" : "Step 1 — Issue"}
+          </legend>
         <div className="space-y-2">
           <Label htmlFor="rs-title">Short summary</Label>
           <Input
@@ -210,6 +220,12 @@ export function RaiseTicketForm({ onSubmitted, showIdentityFields = true }: Rais
             />
           </div>
         </div>
+        </fieldset>
+
+        <fieldset className="border-0 p-0 m-0 min-w-0">
+          <legend className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 w-full">
+            {showIdentityFields ? "Step 3 — Submit" : "Step 2 — Submit"}
+          </legend>
         <Button type="submit" className="w-full" disabled={submitMut.isPending}>
           {submitMut.isPending ? (
             <>
@@ -220,6 +236,7 @@ export function RaiseTicketForm({ onSubmitted, showIdentityFields = true }: Rais
             "Submit ticket"
           )}
         </Button>
+        </fieldset>
       </form>
     </Card>
   );

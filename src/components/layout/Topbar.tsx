@@ -1,4 +1,5 @@
 import { Search, Bell, Loader2, Inbox, LogOut } from "lucide-react";
+import { MobileAdminNav } from "@/components/layout/MobileAdminNav";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -6,7 +7,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
-import { useAuth } from "@/lib/auth/AuthProvider";
+import { useAuth, useAuthQueryEnabled } from "@/lib/auth/AuthProvider";
 import { formatAppRoleLabel } from "@/lib/auth/roles";
 import { callAuthenticatedServerFn } from "@/lib/auth/authenticated-server-fn";
 import { getNotificationFeed, type NotificationFeedItem } from "@/utils/notifications.functions";
@@ -73,6 +74,7 @@ function sessionInitials(auth: ReturnType<typeof useAuth>): string {
 
 export function Topbar() {
   const auth = useAuth();
+  const authReady = useAuthQueryEnabled();
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [notifyOpen, setNotifyOpen] = useState(false);
@@ -88,6 +90,7 @@ export function Topbar() {
   } = useQuery({
     queryKey: ["notification-feed"],
     queryFn: () => callAuthenticatedServerFn(getNotificationFeed, { data: { limit: 30 } }),
+    enabled: authReady,
     refetchInterval: 60_000,
     staleTime: 45_000,
   });
@@ -121,18 +124,16 @@ export function Topbar() {
   }, [navigate, query]);
 
   return (
-    <header className="h-16 shrink-0 bg-card border-b border-border flex items-center gap-4 px-6">
-      <div className="relative flex-1 max-w-xl">
+    <header className="h-16 shrink-0 bg-card border-b border-border flex items-center gap-2 sm:gap-4 px-4 sm:px-6">
+      <MobileAdminNav />
+      <div className="relative flex-1 min-w-0 max-w-xl">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <input
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Search assets, tickets, employees…"
-          className="w-full h-10 pl-10 pr-16 rounded-lg bg-muted border border-transparent text-sm focus:bg-card focus:border-border focus:outline-none focus:ring-2 focus:ring-ring/30 transition"
+          placeholder="Search assets…"
+          className="w-full h-10 pl-10 pr-3 rounded-lg bg-muted border border-transparent text-sm focus:bg-card focus:border-border focus:outline-none focus:ring-2 focus:ring-ring/30 transition"
         />
-        <kbd className="hidden sm:inline absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground border border-border bg-card rounded px-1.5 py-0.5">
-          ⌘K
-        </kbd>
       </div>
       <div className="flex items-center gap-2">
         <Popover
@@ -223,11 +224,11 @@ export function Topbar() {
             ) : null}
           </PopoverContent>
         </Popover>
-        <div className="hidden sm:flex items-center gap-2 h-9 px-2 rounded-lg max-w-[280px]">
+        <div className="flex items-center gap-1 sm:gap-2 h-9 px-1 sm:px-2 rounded-lg max-w-[280px]">
           <div className="h-7 w-7 rounded-full bg-gradient-to-br from-primary to-chart-5 text-white text-xs font-semibold flex items-center justify-center shrink-0">
             {sessionInitials(auth)}
           </div>
-          <div className="text-left leading-tight min-w-0 flex-1">
+          <div className="hidden sm:block text-left leading-tight min-w-0 flex-1">
             <div className="text-xs font-medium truncate">Asset Desk</div>
             <div className="text-[10px] text-muted-foreground truncate" title={sessionSubtitle(auth)}>
               {sessionSubtitle(auth)}

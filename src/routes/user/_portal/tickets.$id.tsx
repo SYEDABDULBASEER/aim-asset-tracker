@@ -1,9 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
+import { LoadingIndicator } from "@/components/ui-kit/LoadingIndicator";
 import { Card, PageHeader, StatusPill } from "@/components/ui-kit/Card";
+import { PageShell } from "@/components/ui-kit/PageShell";
 import { ticketStatusTone } from "@/lib/tickets/user-portal";
+import { ticketPriorityTone } from "@/lib/ui/status-tones";
 import { callEmployeePortalServerFn } from "@/lib/auth/authenticated-server-fn";
 import { USER_HOME_PATH } from "@/lib/auth/routing";
 import { getMyUserTicket } from "@/utils/tickets.functions";
@@ -30,7 +33,7 @@ function UserTicketDetailPage() {
 
   if (!hasIdentity) {
     return (
-      <div className="p-8 max-w-lg mx-auto">
+      <PageShell variant="portal">
         <p className="text-sm text-muted-foreground">
           Enter your work email on the{" "}
           <Link to={USER_HOME_PATH} className="text-primary font-medium hover:underline">
@@ -38,32 +41,31 @@ function UserTicketDetailPage() {
           </Link>{" "}
           to view this ticket.
         </p>
-      </div>
+      </PageShell>
     );
   }
 
   if (isLoading) {
     return (
-      <div className="p-8 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-        <Loader2 className="h-4 w-4 animate-spin" />
-        Loading ticket…
-      </div>
+      <PageShell variant="portal">
+        <LoadingIndicator label="Loading ticket" />
+      </PageShell>
     );
   }
 
   if (isError || !ticket) {
     return (
-      <div className="p-8 max-w-lg mx-auto">
+      <PageShell variant="portal">
         <p className="text-sm text-destructive">Ticket not found or you do not have access.</p>
         <Link to={USER_HOME_PATH} className="text-sm text-primary mt-4 inline-block hover:underline">
           Back to portal
         </Link>
-      </div>
+      </PageShell>
     );
   }
 
   return (
-    <div className="p-8 max-w-[720px] mx-auto space-y-6">
+    <PageShell variant="portal" className="space-y-6">
       <Link
         to={USER_HOME_PATH}
         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
@@ -77,7 +79,7 @@ function UserTicketDetailPage() {
       <Card className="p-5 space-y-4">
         <div className="flex flex-wrap gap-2">
           <StatusPill tone={ticketStatusTone(ticket.status)}>{ticket.status}</StatusPill>
-          <StatusPill tone="info">{ticket.priority}</StatusPill>
+          <StatusPill tone={ticketPriorityTone(ticket.priority)}>{ticket.priority}</StatusPill>
         </div>
         <p className="text-xs text-muted-foreground leading-relaxed">
           {ticket.status === "Open" && "Your request is in the queue. IT will pick it up soon."}
@@ -145,6 +147,6 @@ function UserTicketDetailPage() {
           This ticket is closed. Open a new request if you need further help.
         </p>
       ) : null}
-    </div>
+    </PageShell>
   );
 }

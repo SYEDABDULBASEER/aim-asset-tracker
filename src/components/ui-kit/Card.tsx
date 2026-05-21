@@ -37,11 +37,28 @@ export function PageHeader({
   title,
   subtitle,
   action,
+  centered = false,
 }: {
   title: string;
   subtitle?: string;
   action?: React.ReactNode;
+  /** Center title/subtitle (employee portal landing, public report page). */
+  centered?: boolean;
 }) {
+  if (centered) {
+    return (
+      <div className="text-center mb-6">
+        <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
+        {subtitle ? (
+          <p className="text-sm text-muted-foreground mt-2 max-w-md mx-auto leading-relaxed">
+            {subtitle}
+          </p>
+        ) : null}
+        {action ? <div className="mt-4 flex justify-center">{action}</div> : null}
+      </div>
+    );
+  }
+
   return (
     <div className="flex items-start justify-between gap-4 mb-6">
       <div>

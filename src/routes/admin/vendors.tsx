@@ -1,5 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Card, PageHeader, StatusPill } from "@/components/ui-kit/Card";
+import { TableCard } from "@/components/ui-kit/TableCard";
+import { EmptyState } from "@/components/ui-kit/EmptyState";
+import { ListPageSkeleton } from "@/components/ui-kit/ListPageSkeleton";
+import { PageShell } from "@/components/ui-kit/PageShell";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,14 +15,29 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Building2, Pencil, Plus, Trash2 } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { useAuth } from "@/lib/auth/AuthProvider";
+import { useAuth, useAuthQueryEnabled } from "@/lib/auth/AuthProvider";
 import type { Vendor } from "@/lib/models";
 import { callAuthenticatedServerFn } from "@/lib/auth/authenticated-server-fn";
+import { AuthStatusBanner } from "@/components/auth/AuthStatusBanner";
+import { ReadOnlyRoleBanner } from "@/components/auth/ReadOnlyRoleBanner";
+import { formatListQueryError } from "@/lib/auth/list-query-error";
 import { createVendor, deleteVendor, listVendors, updateVendor } from "@/utils/vendors.functions";
+import { vendorSlaTone } from "@/lib/ui/status-tones";
+import { destructiveAlertActionClass, destructiveIconButtonClass } from "@/lib/ui/button-hierarchy";
 
 export const Route = createFileRoute("/admin/vendors")({
   head: () => ({ meta: [{ title: "Vendors — Asset Desk" }] }),
@@ -61,15 +80,18 @@ function vendorToForm(vendor: Vendor): VendorFormValues {
 
 function Vendors() {
   const auth = useAuth();
+  const authReady = useAuthQueryEnabled();
   const queryClient = useQueryClient();
   const isAdmin = auth.role === "admin";
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [formValues, setFormValues] = useState<VendorFormValues>(emptyVendorForm);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["vendors"],
     queryFn: () => callAuthenticatedServerFn(listVendors, { data: { limit: 100, offset: 0 } }),
+    enabled: authReady,
   });
 
   const invalidate = () => {
@@ -90,7 +112,9 @@ function Vendors() {
       if (!payload.id || !payload.name || !payload.contactEmail) {
         throw new Error("ID, name, and contact email are required.");
       }
-      return editingId ? updateVendor({ data: payload }) : createVendor({ data: payload });
+      return editingId
+        ? callAuthenticatedServerFn(updateVendor, { data: payload })
+        : callAuthenticatedServerFn(createVendor, { data: payload });
     },
     onSuccess: () => {
       toast.success(editingId ? "Vendor updated" : "Vendor created");
@@ -110,6 +134,7 @@ function Vendors() {
         return;
       }
       toast.success("Vendor deleted");
+      setDeleteTargetId(null);
       invalidate();
     },
     onError: (error: Error) => toast.error(error.message ?? "Delete failed"),
@@ -118,30 +143,64 @@ function Vendors() {
   const vendors = data?.items ?? [];
 
   return (
-    <div className="p-8 max-w-[1600px] mx-auto">
+    <PageShell variant="wide">
       <PageHeader
         title="Vendors"
         subtitle={
           isLoading ? "Loading vendors…" : `${data?.total ?? vendors.length} service providers`
         }
         action={
-          isAdmin ? (
-            <Button
-              type="button"
-              className="h-9 shadow-soft"
-              onClick={() => {
-                setEditingId(null);
-                setFormValues(emptyVendorForm());
-                setDialogOpen(true);
-              }}
-            >
-              <Plus className="h-4 w-4" />
-              Add vendor
-            </Button>
-          ) : undefined
+          <Button
+            type="button"
+            className="h-9 shadow-soft"
+            disabled={!isAdmin}
+            title={isAdmin ? undefined : "Only administrators can add vendors"}
+            onClick={() => {
+              setEditingId(null);
+              setFormValues(emptyVendorForm());
+              setDialogOpen(true);
+            }}
+          >
+            <Plus className="h-4 w-4" />
+            Add vendor
+          </Button>
         }
       />
-      <Card className="overflow-hidden">
+      <ReadOnlyRoleBanner role={auth.role} scope="vendor directory" />
+      {isLoading ? (
+        <ListPageSkeleton rows={6} columns={7} />
+      ) : (
+      <TableCard scrollLabel="Vendors">
+        {isError ? (
+          <AuthStatusBanner
+            error={formatListQueryError(error)}
+            onRetry={() => void refetch()}
+            onSignOut={auth.user ? () => void auth.signOut() : undefined}
+          />
+        ) : null}
+        {!isError && vendors.length === 0 ? (
+          <EmptyState
+            icon={Building2}
+            title="No vendors yet"
+            description="Add service providers to track SLAs and maintenance partners."
+            action={
+              isAdmin ? (
+                <Button
+                  type="button"
+                  className="h-9 shadow-soft"
+                  onClick={() => {
+                    setEditingId(null);
+                    setFormValues(emptyVendorForm());
+                    setDialogOpen(true);
+                  }}
+                >
+                  <Plus className="h-4 w-4" />
+                  Add vendor
+                </Button>
+              ) : undefined
+            }
+          />
+        ) : (
         <table className="w-full text-sm">
           <thead className="bg-muted/50">
             <tr className="text-[11px] uppercase tracking-wider text-muted-foreground">
@@ -160,15 +219,7 @@ function Vendors() {
                 <td className="px-4 py-3 text-muted-foreground">{vendor.contactEmail}</td>
                 <td className="px-4 py-3">{vendor.contracts}</td>
                 <td className="px-4 py-3">
-                  <StatusPill
-                    tone={
-                      vendor.slaPercent >= 95
-                        ? "success"
-                        : vendor.slaPercent >= 85
-                          ? "info"
-                          : "warning"
-                    }
-                  >
+                  <StatusPill tone={vendorSlaTone(vendor.slaPercent)}>
                     {vendor.slaPercent}%
                   </StatusPill>
                 </td>
@@ -193,11 +244,12 @@ function Vendors() {
                         type="button"
                         variant="outline"
                         size="icon"
-                        className="h-7 w-7"
-                        onClick={() => deleteMut.mutate(vendor.id)}
+                        className={`h-7 w-7 ${destructiveIconButtonClass}`}
+                        aria-label={`Delete vendor ${vendor.name}`}
+                        onClick={() => setDeleteTargetId(vendor.id)}
                         disabled={deleteMut.isPending}
                       >
-                        <Trash2 className="h-3.5 w-3.5" />
+                        <Trash2 className="h-3.5 w-3.5" aria-hidden />
                       </Button>
                     </div>
                   ) : null}
@@ -206,7 +258,39 @@ function Vendors() {
             ))}
           </tbody>
         </table>
-      </Card>
+        )}
+      </TableCard>
+      )}
+
+      <AlertDialog
+        open={deleteTargetId !== null}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTargetId(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete vendor</AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleteTargetId
+                ? `Remove ${deleteTargetId} from the vendor directory. Existing maintenance records are not deleted.`
+                : "Remove this vendor from the directory."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteMut.isPending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className={destructiveAlertActionClass}
+              onClick={() => {
+                if (deleteTargetId) deleteMut.mutate(deleteTargetId);
+              }}
+              disabled={deleteMut.isPending || !deleteTargetId}
+            >
+              Delete vendor
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-md">
@@ -303,6 +387,6 @@ function Vendors() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </PageShell>
   );
 }

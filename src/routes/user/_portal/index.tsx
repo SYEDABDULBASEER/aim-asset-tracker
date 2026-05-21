@@ -1,10 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHeader } from "@/components/ui-kit/Card";
+import { PageShell } from "@/components/ui-kit/PageShell";
 import { PortalIdentityCard } from "@/components/user/PortalIdentityCard";
 import { UserTicketsPanel } from "@/components/user/UserTicketsPanel";
 import { RaiseTicketForm } from "@/components/user/RaiseTicketForm";
 import { usePortalRequester } from "@/components/user/PortalRequesterProvider";
-import { firebaseAuthRequired } from "@/lib/firebase/env";
 
 export const Route = createFileRoute("/user/_portal/")({
   head: () => ({ meta: [{ title: "Employee Support Portal — Asset Desk" }] }),
@@ -15,14 +15,11 @@ function UserPortalPage() {
   const { hasIdentity } = usePortalRequester();
 
   return (
-    <div className="p-6 md:p-8 max-w-[960px] mx-auto space-y-8">
+    <PageShell variant="portal" className="space-y-8">
       <PageHeader
+        centered
         title="Employee Support Portal"
-        subtitle={
-          firebaseAuthRequired()
-            ? "Sign in with your employee account to raise tickets and track your requests."
-            : "Raise IT support tickets and track their status in one place — no password required."
-        }
+        subtitle="Raise IT support tickets with your work email — stored on this device only, not a Firebase IT login."
       />
 
       <PortalIdentityCard />
@@ -39,6 +36,6 @@ function UserPortalPage() {
           </section>
         </>
       ) : null}
-    </div>
+    </PageShell>
   );
 }

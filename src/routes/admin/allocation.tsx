@@ -1,5 +1,10 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Card, PageHeader, StatusPill } from "@/components/ui-kit/Card";
+import { TableCard } from "@/components/ui-kit/TableCard";
+import { AssetContextBanner } from "@/components/ui-kit/AssetContextBanner";
+import { EmptyState } from "@/components/ui-kit/EmptyState";
+import { ListPageSkeleton } from "@/components/ui-kit/ListPageSkeleton";
+import { PageShell } from "@/components/ui-kit/PageShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,15 +23,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus } from "lucide-react";
+import { ArrowLeftRight, Plus } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import type { TransferStatus } from "@/lib/models";
 import { callAuthenticatedServerFn } from "@/lib/auth/authenticated-server-fn";
+import { useAuth, useAuthQueryEnabled } from "@/lib/auth/AuthProvider";
+import { AuthStatusBanner } from "@/components/auth/AuthStatusBanner";
+import { formatListQueryError } from "@/lib/auth/list-query-error";
 import { createTransfer, listTransfers, updateTransferStatus } from "@/utils/transfers.functions";
 import { listAssets } from "@/utils/assets.functions";
+import { transferStatusTone } from "@/lib/ui/status-tones";
 
 type AllocationSearch = {
   assetId?: string;
@@ -40,12 +49,10 @@ export const Route = createFileRoute("/admin/allocation")({
   component: Allocation,
 });
 
-function tone(status: TransferStatus) {
-  const value = status === "Approved" ? "success" : status === "Pending" ? "warning" : "danger";
-  return (value satisfies Parameters<typeof StatusPill>[0]["tone"]) ? value : "info";
-}
-
 function Allocation() {
+  const auth = useAuth();
+  const navigate = useNavigate();
+  const authReady = useAuthQueryEnabled();
   const queryClient = useQueryClient();
   const { assetId: searchAssetId } = Route.useSearch();
   const [createOpen, setCreateOpen] = useState(false);
@@ -54,7 +61,7 @@ function Allocation() {
   const [formTo, setFormTo] = useState("");
   const [formNotes, setFormNotes] = useState("");
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["transfers", searchAssetId],
     queryFn: () =>
       callAuthenticatedServerFn(listTransfers, {
@@ -64,6 +71,7 @@ function Allocation() {
           offset: 0,
         },
       }),
+    enabled: authReady,
   });
 
   const { data: assetsRes } = useQuery({
@@ -118,7 +126,7 @@ function Allocation() {
   });
 
   return (
-    <div className="p-8 max-w-[1600px] mx-auto">
+    <PageShell variant="wide">
       <PageHeader
         title="Asset Allocation"
         subtitle={
@@ -139,7 +147,42 @@ function Allocation() {
         }
       />
 
-      <Card className="overflow-hidden">
+      {searchAssetId ? (
+        <AssetContextBanner
+          assetId={searchAssetId}
+          assetLabel={assetMap.get(searchAssetId)}
+          onClear={() => void navigate({ to: "/admin/allocation", search: { assetId: undefined } })}
+        />
+      ) : null}
+
+      {isLoading ? (
+        <ListPageSkeleton rows={6} columns={6} />
+      ) : (
+      <TableCard scrollLabel="Asset transfer requests">
+        {isError ? (
+          <AuthStatusBanner
+            error={formatListQueryError(error)}
+            onRetry={() => void refetch()}
+            onSignOut={auth.user ? () => void auth.signOut() : undefined}
+          />
+        ) : null}
+        {!isError && rows.length === 0 ? (
+          <EmptyState
+            icon={ArrowLeftRight}
+            title="No transfer requests"
+            description={
+              searchAssetId
+                ? "No allocation history for this asset yet."
+                : "Create a transfer when equipment moves between people or locations."
+            }
+            action={
+              <Button type="button" className="h-9 shadow-soft" onClick={() => setCreateOpen(true)}>
+                <Plus className="h-4 w-4" />
+                New transfer
+              </Button>
+            }
+          />
+        ) : (
         <table className="w-full text-sm">
           <thead className="bg-muted/50">
             <tr className="text-[11px] uppercase tracking-wider text-muted-foreground">
@@ -170,7 +213,7 @@ function Allocation() {
                 <td className="px-4 py-3">{row.fromParty}</td>
                 <td className="px-4 py-3">{row.toParty}</td>
                 <td className="px-4 py-3">
-                  <StatusPill tone={tone(row.status)}>{row.status}</StatusPill>
+                  <StatusPill tone={transferStatusTone(row.status)}>{row.status}</StatusPill>
                 </td>
                 <td className="px-4 py-3">
                   {row.status === "Pending" ? (
@@ -200,7 +243,9 @@ function Allocation() {
             ))}
           </tbody>
         </table>
-      </Card>
+        )}
+      </TableCard>
+      )}
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent className="sm:max-w-md">
@@ -263,6 +308,6 @@ function Allocation() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </PageShell>
   );
 }
