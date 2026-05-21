@@ -9,19 +9,21 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { useAuth } from "@/lib/auth/AuthProvider";
 import {
-  allowDemoAuthInDevelopment,
   firebaseAuthRequired,
   getFirebaseWebConfig,
   isFirebaseConfigured,
 } from "@/lib/firebase/env";
-import { formatAppRoleLabel } from "@/lib/auth/roles";
-import { useAuth } from "@/lib/auth/AuthProvider";
 import type { OrgSettings } from "@/lib/models";
 import { callAuthenticatedServerFn } from "@/lib/auth/authenticated-server-fn";
 import { seedFirestoreDemoData } from "@/utils/assets.functions";
 import { listAuditLogs } from "@/utils/audit.functions";
-import { getOrgSettings, updateOrgSettings } from "@/utils/settings.functions";
+import {
+  getFirebaseSetupStatus,
+  getOrgSettings,
+  updateOrgSettings,
+} from "@/utils/settings.functions";
 
 export const Route = createFileRoute("/admin/settings")({
   head: () => ({ meta: [{ title: "Settings — Asset Desk" }] }),
@@ -40,8 +42,9 @@ function listToLines(values: string[]) {
 }
 
 function Settings() {
+  const { role, user } = useAuth();
+  const isAdmin = role === "admin";
   const queryClient = useQueryClient();
-  const auth = useAuth();
   const [seedMessage, setSeedMessage] = useState<string | null>(null);
   const [categoriesText, setCategoriesText] = useState("");
   const [locationsText, setLocationsText] = useState("");
@@ -57,9 +60,14 @@ function Settings() {
     webhookEnabled: false,
   });
   const firebaseOn = isFirebaseConfigured();
+  const authOn = firebaseAuthRequired();
   const projectId = getFirebaseWebConfig()?.projectId;
-  const isAdmin = auth.role === "admin";
-
+  const { data: firebaseStatus } = useQuery({
+    queryKey: ["firebase-setup-status"],
+    queryFn: () => callAuthenticatedServerFn(getFirebaseSetupStatus),
+    enabled: firebaseOn,
+  });
+  const adminSdkOn = firebaseStatus?.adminSdkConfigured === true;
   const { data: orgSettings, isLoading: settingsLoading } = useQuery({
     queryKey: ["org-settings"],
     queryFn: () => callAuthenticatedServerFn(getOrgSettings),
@@ -68,7 +76,6 @@ function Settings() {
   const { data: auditData, isLoading: auditLoading } = useQuery({
     queryKey: ["audit-logs"],
     queryFn: () => callAuthenticatedServerFn(listAuditLogs, { data: { limit: 100 } }),
-    enabled: isAdmin,
   });
 
   useEffect(() => {
@@ -117,45 +124,13 @@ function Settings() {
             <Database className="h-5 w-5 text-primary" />
           </div>
           <div className="min-w-0 flex-1">
-            <div className="text-sm font-semibold">Firebase (Firestore, Auth, Storage)</div>
+            <div className="text-sm font-semibold">Firebase (Firestore & Storage)</div>
             <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
               {firebaseOn
-                ? `Connected (project: ${projectId}). ${
-                    firebaseAuthRequired()
-                      ? "Authentication is enabled — sign in at /login (staff) or /user/login (employees)."
-                      : allowDemoAuthInDevelopment()
-                        ? "Demo mode: VITE_ALLOW_DEMO_AUTH=true skips sign-in."
-                        : "Firebase is configured."
-                  }`
+                ? `Project: ${projectId}. Server Admin SDK: ${firebaseStatus === undefined ? "checking…" : adminSdkOn ? "configured" : "missing — add FIREBASE_SERVICE_ACCOUNT_PATH in .env and restart npm run dev"}. Auth: ${authOn ? (user ? `signed in (${role})` : "sign in required for IT workspace") : "demo mode (VITE_ALLOW_DEMO_AUTH)"}.${role === "viewer" ? " Viewer is read-only — use auth:set-role for admin or agent." : ""}`
                 : "Firebase env vars are not set. The app uses the in-memory demo store. See FIREBASE_SETUP.md."}
             </p>
-            {firebaseOn && (
-              <div className="mt-3 rounded-lg border border-border bg-card/80 p-3 text-xs space-y-1">
-                <p className="font-medium text-foreground">Your session</p>
-                {auth.user ? (
-                  <>
-                    <p className="text-muted-foreground">
-                      Email: <span className="text-foreground">{auth.user.email ?? "—"}</span>
-                    </p>
-                    <p className="text-muted-foreground">
-                      Role: <span className="text-foreground">{formatAppRoleLabel(auth.role)}</span>
-                    </p>
-                    <p className="text-muted-foreground">
-                      UID: <span className="font-mono text-[10px] text-foreground">{auth.user.uid}</span>
-                    </p>
-                  </>
-                ) : firebaseAuthRequired() ? (
-                  <p className="text-muted-foreground">
-                    Not signed in. Use <a href="/login" className="text-primary hover:underline">/login</a>{" "}
-                    (IT) or <a href="/user/login" className="text-primary hover:underline">/user/login</a>{" "}
-                    (employee).
-                  </p>
-                ) : (
-                  <p className="text-muted-foreground">Demo mode — no Firebase session.</p>
-                )}
-              </div>
-            )}
-            {firebaseOn && isAdmin && (
+            {firebaseOn && adminSdkOn && isAdmin && (
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 <Button
                   type="button"
@@ -169,10 +144,21 @@ function Settings() {
                   {seedMutation.isPending ? "Seeding…" : "Seed Firestore with demo data"}
                 </Button>
                 <span className="text-[11px] text-muted-foreground">
-                  Seeds assets, tickets, transfers, maintenance, employees, and vendors. Disabled in
-                  production builds.
+                  Seeds assets, tickets, transfers, maintenance, employees, and vendors. Or run{" "}
+                  <code className="text-[10px] bg-muted px-1 rounded">npm run seed:firestore</code> in
+                  the project folder.
                 </span>
               </div>
+            )}
+            {firebaseOn && adminSdkOn && !isAdmin && (
+              <p className="text-xs mt-3 text-muted-foreground leading-relaxed">
+                Only <strong>admin</strong> users can seed from this page. Your role is{" "}
+                <strong>{role}</strong>. Ask an administrator to run{" "}
+                <code className="text-[10px] bg-muted px-1 rounded">npm run auth:set-role -- your@email admin</code>{" "}
+                then sign in again, or run{" "}
+                <code className="text-[10px] bg-muted px-1 rounded">npm run seed:firestore</code> from
+                the terminal.
+              </p>
             )}
             {seedMessage && (
               <p className="text-xs mt-2 text-foreground whitespace-pre-wrap">{seedMessage}</p>
@@ -267,8 +253,7 @@ function Settings() {
         )}
       </Card>
 
-      {isAdmin && (
-        <Card className="overflow-hidden">
+      <Card className="overflow-hidden">
           <div className="px-6 py-4 border-b border-border">
             <h3 className="text-sm font-semibold">Audit logs</h3>
             <p className="text-xs text-muted-foreground mt-1">
@@ -306,7 +291,6 @@ function Settings() {
             </table>
           )}
         </Card>
-      )}
     </div>
   );
 }

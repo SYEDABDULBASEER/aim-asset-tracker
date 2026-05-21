@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getAuth } from "firebase-admin/auth";
 import { z } from "zod";
+import { requireRole } from "@/lib/auth/require-auth";
 import { isFirebaseAdminConfigured, getFirebaseAdminApp } from "@/lib/firebase/admin";
 import { isFirebaseConfigured } from "@/lib/firebase/env";
 import type { AppRole } from "@/lib/auth/roles";
@@ -14,6 +15,7 @@ const RegisterAuthUserSchema = z.object({
 export const registerAuthUser = createServerFn({ method: "POST" })
   .inputValidator(RegisterAuthUserSchema)
   .handler(async ({ data }) => {
+    requireRole("admin");
     if (!isFirebaseConfigured()) {
       throw new Error("Firebase is not configured. Add VITE_FIREBASE_* to .env.");
     }

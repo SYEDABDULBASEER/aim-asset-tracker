@@ -1,16 +1,33 @@
 import { createMiddleware } from "@tanstack/react-start";
-import { appendFirebaseAuthHeader } from "@/lib/auth/firebase-auth-header";
+import { staffWorkspaceAuthRequired } from "@/lib/auth/staff-workspace-auth";
+import { FIREBASE_ID_TOKEN_HEADER } from "@/lib/auth/auth-headers";
+import { resolveItWorkspaceIdToken } from "@/lib/auth/resolve-it-id-token";
+
+function hasBearerToken(headers: Headers): boolean {
+  return (
+    headers.has("Authorization") ||
+    headers.has("authorization") ||
+    headers.has(FIREBASE_ID_TOKEN_HEADER)
+  );
+}
 
 /** Client-only: attach Firebase ID token to every server function request. */
 export const injectAuthTokenMiddleware = createMiddleware({ type: "function" }).client(
-  async ({ next, headers: existing }) => {
-    try {
-      const headers = new Headers(existing);
-      await appendFirebaseAuthHeader(headers);
-      if (headers.has("Authorization")) return next({ headers: Object.fromEntries(headers.entries()) });
-    } catch (error) {
-      console.warn("injectAuthTokenMiddleware: could not attach auth token", error);
+  async ({ next, headers: incomingHeaders }) => {
+    if (!staffWorkspaceAuthRequired()) {
+      return next();
     }
-    return next();
+
+    const headers = new Headers(incomingHeaders as HeadersInit | undefined);
+    if (!hasBearerToken(headers)) {
+      const token = await resolveItWorkspaceIdToken();
+      if (token) {
+        const bearer = `Bearer ${token}`;
+        headers.set("Authorization", bearer);
+        headers.set(FIREBASE_ID_TOKEN_HEADER, bearer);
+      }
+    }
+
+    return next({ headers: Object.fromEntries(headers.entries()) });
   },
 );

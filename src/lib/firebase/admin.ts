@@ -1,8 +1,11 @@
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { existsSync, readFileSync } from "node:fs";
+import { isAbsolute, resolve } from "node:path";
 import { initializeApp, cert, getApps, type App } from "firebase-admin/app";
 import { getFirestore, type Firestore } from "firebase-admin/firestore";
 import { getFirebaseWebConfig } from "./env";
+import { loadServerEnvFile } from "./load-server-env";
+
+loadServerEnvFile();
 
 let adminApp: App | undefined;
 let adminDb: Firestore | undefined;
@@ -14,10 +17,8 @@ function readServiceAccountJson(): Record<string, unknown> | null {
   if (pathRaw && typeof pathRaw === "string" && pathRaw.trim()) {
     try {
       const trimmed = pathRaw.trim();
-      const filePath = resolve(
-        trimmed.startsWith(".") ? process.cwd() : "",
-        trimmed,
-      );
+      const filePath = isAbsolute(trimmed) ? trimmed : resolve(process.cwd(), trimmed);
+      if (!existsSync(filePath)) return null;
       return JSON.parse(readFileSync(filePath, "utf8")) as Record<string, unknown>;
     } catch {
       return null;

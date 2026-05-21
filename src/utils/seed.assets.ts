@@ -1,7 +1,7 @@
 import type { Asset } from "@/lib/models";
-import { buildBook1Assets } from "./seed.book1.assets";
+import { buildAssetsData2025 } from "./seed.assets-data-2025";
 
-/** Inventory seeded from Book1.xlsx (see scripts/generate_book1_asset_ids.py). */
+/** Inventory from Assets Data 2025.xlsx (PCs and Specifications). */
 export function buildSeedAssets(): Asset[] {
-  return buildBook1Assets();
+  return buildAssetsData2025();
 }

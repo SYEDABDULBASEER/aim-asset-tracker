@@ -6,7 +6,7 @@ export function buildSeedTickets(): Ticket[] {
     {
       id: "TKT-1031",
       title: "Laptop overheating issue",
-      assetId: "LAP-0001",
+      assetId: "PC-A01",
       priority: "Critical",
       status: "Open",
       assigneeName: "Sarah Ali",
@@ -32,7 +32,7 @@ export function buildSeedTickets(): Ticket[] {
     {
       id: "TKT-1030",
       title: "VPN disconnecting frequently",
-      assetId: "LAP-0001",
+      assetId: "PC-A01",
       priority: "High",
       status: "Open",
       assigneeName: "Mohammed Faisal",
@@ -45,7 +45,7 @@ export function buildSeedTickets(): Ticket[] {
     {
       id: "TKT-1029",
       title: "Printer toner replacement",
-      assetId: "PC-0011",
+      assetId: "PC-C11",
       priority: "Medium",
       status: "In Progress",
       assigneeName: "David Mathew",
@@ -58,7 +58,7 @@ export function buildSeedTickets(): Ticket[] {
     {
       id: "TKT-1027",
       title: "Monitor display flickering",
-      assetId: "MON-0001",
+      assetId: "PC-C01",
       priority: "High",
       status: "Waiting Parts",
       assigneeName: "Sarah Ali",
@@ -71,7 +71,7 @@ export function buildSeedTickets(): Ticket[] {
     {
       id: "TKT-1024",
       title: "Network switch not responding",
-      assetId: "PC-0008",
+      assetId: "PC-C08",
       priority: "Critical",
       status: "Resolved",
       assigneeName: "Priya Sharma",
@@ -84,7 +84,7 @@ export function buildSeedTickets(): Ticket[] {
     {
       id: "TKT-1018",
       title: "Mouse not detecting",
-      assetId: "ACC-0312",
+      assetId: "PC-A03",
       priority: "Low",
       status: "Closed",
       assigneeName: "David Mathew",

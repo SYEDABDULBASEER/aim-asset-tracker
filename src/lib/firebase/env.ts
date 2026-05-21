@@ -70,17 +70,25 @@ export function isLocalDevelopment(): boolean {
   return typeof process !== "undefined" && process.env.NODE_ENV !== "production";
 }
 
-/**
- * Skip login and use demo server context. Set `VITE_ALLOW_DEMO_AUTH=true` in `.env` to opt in
- * while Firebase is configured (e.g. quick UI work without tokens).
- */
+/** @deprecated No longer used — all logged-in users default to admin. */
 export function allowDemoAuthInDevelopment(): boolean {
-  if (typeof import.meta !== "undefined" && import.meta.env?.PROD) return false;
-  if (typeof process !== "undefined" && process.env.NODE_ENV === "production") return false;
-  return isTruthyEnvFlag(env("VITE_ALLOW_DEMO_AUTH"));
+  return false;
 }
 
-/** Sign-in gate + Bearer tokens required on server functions. */
+/**
+ * When true, the app treats Firebase Auth as required (tokens, guards, server checks).
+ * Returns false if Firebase web config is not set (in-memory demo mode).
+ */
 export function firebaseAuthRequired(): boolean {
-  return isFirebaseConfigured() && !allowDemoAuthInDevelopment();
+  if (!isFirebaseConfigured()) return false;
+  return true;
+}
+
+/**
+ * Client-safe: true when service account env is set (does not load firebase-admin).
+ * Use this in browser routes — never import `@/lib/firebase/admin` on the client.
+ */
+export function isFirebaseAdminEnvConfigured(): boolean {
+  if (!isFirebaseConfigured()) return false;
+  return Boolean(env("FIREBASE_SERVICE_ACCOUNT_PATH") || env("FIREBASE_SERVICE_ACCOUNT_JSON"));
 }

@@ -1,14 +1,15 @@
 import type { AppRole } from "./roles";
 import { isEndUserRole, isStaffRole } from "./roles";
 
-/** App entry — choose IT staff or employee sign-in. */
+/** App entry — choose employee portal or IT workspace. */
 export const LANDING_PATH = "/";
 
-/** IT staff sign-in (admin, agent, viewer → full workspace). */
+/** IT staff sign-in only (accounts provisioned in Firebase; no self-service signup). */
 export const STAFF_LOGIN_PATH = "/login";
+/** Legacy URL; redirects to {@link STAFF_LOGIN_PATH}. */
 export const STAFF_SIGNUP_PATH = "/signup";
 
-/** Employee sign-in (user role → tickets only). */
+/** Legacy URLs; redirect to {@link USER_HOME_PATH} (employees do not use accounts). */
 export const USER_LOGIN_PATH = "/user/login";
 export const USER_SIGNUP_PATH = "/user/signup";
 
@@ -28,7 +29,7 @@ export const USER_REQUEST_SUPPORT_PATH = "/user/request-support";
 export const STAFF_AUTH_PATHS = new Set([STAFF_LOGIN_PATH, STAFF_SIGNUP_PATH]);
 export const USER_AUTH_PATHS = new Set([USER_LOGIN_PATH, USER_SIGNUP_PATH]);
 
-/** Pages without a workspace shell (login, signup, landing). */
+/** Pages without a workspace shell; includes legacy auth URLs that redirect. */
 export const PUBLIC_FULL_PAGE_PATHS = new Set([
   LANDING_PATH,
   STAFF_LOGIN_PATH,
@@ -74,7 +75,7 @@ export function defaultPathForRole(role: AppRole): string {
 }
 
 export function loginPathForRole(role: AppRole): string {
-  if (isEndUserRole(role)) return USER_LOGIN_PATH;
+  if (isEndUserRole(role)) return USER_HOME_PATH;
   if (isStaffRole(role)) return STAFF_LOGIN_PATH;
   return LANDING_PATH;
 }
@@ -83,6 +84,3 @@ export function roleAllowedOnStaffLogin(role: AppRole): boolean {
   return isStaffRole(role);
 }
 
-export function roleAllowedOnUserLogin(role: AppRole): boolean {
-  return isEndUserRole(role);
-}

@@ -25,6 +25,12 @@ export const getOrgSettings = createServerFn({ method: "GET" }).handler(async ()
   return loadOrgSettings();
 });
 
+/** Server-side Admin SDK check (service account env is not visible in the browser). */
+export const getFirebaseSetupStatus = createServerFn({ method: "GET" }).handler(async () => {
+  requireRead("settings");
+  return { adminSdkConfigured: isFirebaseAdminConfigured() };
+});
+
 export const updateOrgSettings = createServerFn({ method: "POST" })
   .inputValidator(OrgSettingsUpdateSchema)
   .handler(async ({ data }) => {

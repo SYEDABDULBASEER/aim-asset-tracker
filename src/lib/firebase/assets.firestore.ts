@@ -70,6 +70,22 @@ export async function firestoreDeleteAsset(id: string): Promise<boolean> {
 
 const BATCH_SIZE = 400;
 
+/** Keep only workbook PCs: remove Firestore assets not in the list, then upsert the list. */
+export async function firestoreSyncAssetsExact(
+  assets: Asset[],
+): Promise<{ written: number; removed: number }> {
+  const seedIds = new Set(assets.map((a) => a.id));
+  const existing = await firestoreListAllAssets();
+  let removed = 0;
+  for (const item of existing) {
+    if (seedIds.has(item.id)) continue;
+    await firestoreDeleteAsset(item.id);
+    removed += 1;
+  }
+  const { written } = await firestoreSeedAssets(assets);
+  return { written, removed };
+}
+
 export async function firestoreSeedAssets(assets: Asset[]): Promise<{ written: number }> {
   if (isFirebaseAdminConfigured()) {
     return adminStore.seed(assets);

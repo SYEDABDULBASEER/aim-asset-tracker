@@ -1,29 +1,12 @@
-import { firebaseAuthRequired, isFirebaseConfigured } from "@/lib/firebase/env";
+import { getAuthSessionUser } from "@/lib/auth/auth-session-ref";
+import { resolveItWorkspaceIdToken } from "@/lib/auth/resolve-it-id-token";
+import { isFirebaseConfigured } from "@/lib/firebase/env";
 
-/** Optional override from AuthProvider; defaults to Firebase `currentUser`. */
+/** Optional override from AuthProvider; defaults to session ref + Firebase Auth singleton. */
 let getIdTokenFromSession: (() => Promise<string | null>) | null = null;
 
 export function registerServerFnIdTokenProvider(provider: () => Promise<string | null>): void {
   getIdTokenFromSession = provider;
-}
-
-async function readTokenFromFirebaseAuth(): Promise<string | null> {
-  if (!isFirebaseConfigured()) return null;
-
-  const { getFirebaseAuth } = await import("@/lib/firebase/init");
-  const auth = getFirebaseAuth();
-  await auth.authStateReady();
-
-  let user = auth.currentUser;
-  if (!user && firebaseAuthRequired()) {
-    for (let attempt = 0; attempt < 20 && !user; attempt += 1) {
-      await new Promise((resolve) => setTimeout(resolve, 50));
-      user = auth.currentUser;
-    }
-  }
-
-  if (!user) return null;
-  return user.getIdToken();
 }
 
 export async function resolveServerFnIdToken(): Promise<string | null> {
@@ -36,7 +19,23 @@ export async function resolveServerFnIdToken(): Promise<string | null> {
     }
   }
 
-  return readTokenFromFirebaseAuth();
+  return resolveItWorkspaceIdToken();
 }
 
-registerServerFnIdTokenProvider(() => readTokenFromFirebaseAuth());
+/** @deprecated Use resolveItWorkspaceIdToken */
+export async function getFirebaseIdTokenForServerFn(): Promise<string | null> {
+  if (!isFirebaseConfigured()) return null;
+  return resolveItWorkspaceIdToken();
+}
+
+/** @deprecated Use resolveItWorkspaceIdToken */
+export async function waitForServerFnIdToken(maxAttempts = 60): Promise<string | null> {
+  for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+    const token = await resolveItWorkspaceIdToken();
+    if (token) return token;
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  }
+  return null;
+}
+
+registerServerFnIdTokenProvider(() => resolveItWorkspaceIdToken());

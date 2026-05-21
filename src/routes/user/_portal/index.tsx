@@ -1,41 +1,44 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { Card, PageHeader } from "@/components/ui-kit/Card";
-import { Button } from "@/components/ui/button";
+import { createFileRoute } from "@tanstack/react-router";
+import { PageHeader } from "@/components/ui-kit/Card";
+import { PortalIdentityCard } from "@/components/user/PortalIdentityCard";
 import { UserTicketsPanel } from "@/components/user/UserTicketsPanel";
-import { LifeBuoy } from "lucide-react";
-import { USER_REQUEST_SUPPORT_PATH } from "@/lib/auth/routing";
+import { RaiseTicketForm } from "@/components/user/RaiseTicketForm";
+import { usePortalRequester } from "@/components/user/PortalRequesterProvider";
+import { firebaseAuthRequired } from "@/lib/firebase/env";
 
 export const Route = createFileRoute("/user/_portal/")({
-  head: () => ({ meta: [{ title: "Employee Portal — Asset Desk" }] }),
+  head: () => ({ meta: [{ title: "Employee Support Portal — Asset Desk" }] }),
   component: UserPortalPage,
 });
 
 function UserPortalPage() {
+  const { hasIdentity } = usePortalRequester();
+
   return (
-    <div className="p-8 max-w-[900px] mx-auto space-y-6">
-      <PageHeader title="Employee Portal" subtitle="Raise incidents and track responses with IT." />
+    <div className="p-6 md:p-8 max-w-[960px] mx-auto space-y-8">
+      <PageHeader
+        title="Employee Support Portal"
+        subtitle={
+          firebaseAuthRequired()
+            ? "Sign in with your employee account to raise tickets and track your requests."
+            : "Raise IT support tickets and track their status in one place — no password required."
+        }
+      />
 
-      <UserTicketsPanel />
+      <PortalIdentityCard />
 
-      <Card className="p-6 border-primary/20 bg-primary/5">
-        <div className="flex items-start gap-4">
-          <div className="h-12 w-12 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
-            <LifeBuoy className="h-5 w-5 text-primary" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <h2 className="text-sm font-semibold">Report an issue</h2>
-            <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-              Submit a new support ticket. Use the same email as your sign-in so it appears under My
-              requests.
-            </p>
-            <div className="mt-4">
-              <Button asChild>
-                <Link to={USER_REQUEST_SUPPORT_PATH}>Raise a ticket</Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </Card>
+      {hasIdentity ? (
+        <>
+          <section className="space-y-3">
+            <h2 className="text-sm font-semibold text-foreground">Raise a new ticket</h2>
+            <RaiseTicketForm showIdentityFields={false} />
+          </section>
+
+          <section className="space-y-3">
+            <UserTicketsPanel />
+          </section>
+        </>
+      ) : null}
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
-import { Card, PageHeader, StatusPill } from "@/components/ui-kit/Card";
+import { Card, PageHeader } from "@/components/ui-kit/Card";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -17,8 +17,6 @@ import {
   Wrench,
   QrCode,
   FileText,
-  User,
-  Tag,
   ChevronRight,
   Pencil,
   Trash2,
@@ -28,7 +26,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { callAuthenticatedServerFn } from "@/lib/auth/authenticated-server-fn";
-import { useAuth, useIsAdmin } from "@/lib/auth/AuthProvider";
+import { useIsAdmin } from "@/lib/auth/AuthProvider";
 import { isFirebaseConfigured } from "@/lib/firebase/env";
 import {
   listAssetDocuments,
@@ -85,9 +83,8 @@ function AssetDetail() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [formValues, setFormValues] = useState<AssetFormValues>(assetToFormValues());
   const uploadRef = useRef<HTMLInputElement>(null);
-  const auth = useAuth();
   const isAdmin = useIsAdmin();
-  const storageEnabled = isFirebaseConfigured() && Boolean(auth.user);
+  const storageEnabled = isFirebaseConfigured();
 
   const { data: asset, isLoading } = useQuery({
     queryKey: ["asset", id],
@@ -167,21 +164,10 @@ function AssetDetail() {
         return;
       }
       toast.success("Asset deleted");
-      void navigate({ to: "/admin/assets" });
+      void navigate({ to: "/admin/assets", search: { q: undefined } });
     },
     onError: (e: Error) => toast.error(e.message ?? "Delete failed"),
   });
-
-  const statusTone: Parameters<typeof StatusPill>[0]["tone"] =
-    asset?.status === "Active"
-      ? "success"
-      : asset?.status === "In Repair"
-        ? "warning"
-        : asset?.status === "Available"
-          ? "info"
-          : asset?.status === "Lost"
-            ? "danger"
-            : "muted";
 
   const qrImageUrl = useMemo(() => {
     if (!qrPayload?.payload) return null;
@@ -196,7 +182,7 @@ function AssetDetail() {
   return (
     <div className="p-8 max-w-[1600px] mx-auto">
       <nav className="flex items-center gap-1.5 text-xs text-muted-foreground mb-4">
-        <Link to="/admin/assets" className="hover:text-foreground">
+        <Link to="/admin/assets" search={{ q: undefined }} className="hover:text-foreground">
           Assets
         </Link>
         <ChevronRight className="h-3 w-3" />
@@ -205,13 +191,7 @@ function AssetDetail() {
 
       <PageHeader
         title={isLoading ? "Loading…" : (asset?.name ?? "Asset not found")}
-        subtitle={
-          isLoading
-            ? id
-            : asset
-              ? `${asset.id} · ${asset.category}`
-              : id
-        }
+        subtitle={isLoading ? id : (asset?.id ?? id)}
         action={
           <div className="flex items-center gap-2">
             <Button asChild variant="outline" className="h-9">
@@ -267,31 +247,17 @@ function AssetDetail() {
               <div className="h-40 w-56 rounded-xl bg-gradient-to-br from-muted to-accent flex items-center justify-center text-muted-foreground text-xs">
                 Asset Image
               </div>
-              <div className="flex-1 grid grid-cols-2 gap-4 text-sm">
+              <div className="flex-1 grid grid-cols-1 gap-4 text-sm">
                 <Field label="Asset ID" value={asset?.id ?? "—"} />
-                <Field label="Asset Name" value={asset?.name ?? "—"} />
-                <Field icon={Tag} label="Category" value={asset?.category ?? "—"} />
-                <Field icon={User} label="Assigned To" value={asset?.assignedTo ?? "—"} />
-                <Field label="Department" value={asset?.department ?? "—"} />
-                <Field label="Serial" value={asset?.serial ?? "—"} />
-                <Field label="Location" value={asset?.location ?? "—"} />
+                <Field label="S No" value={asset?.serial ?? "—"} />
+                <Field label="Name" value={asset?.name ?? "—"} />
+                <Field label="Desk" value={asset?.location ?? "—"} />
                 <Field
-                  label="Specifications"
+                  label="Accessories & Softwares"
                   value={
                     asset
                       ? getAssetSpecificationLines(asset).join(" · ") || "—"
                       : "—"
-                  }
-                />
-                <Field label="Purchase date" value={formatDateLabel(asset?.purchaseDate)} />
-                <Field label="Warranty until" value={formatDateLabel(asset?.warrantyUntil)} />
-                <Field label="Last service" value={formatDateLabel(asset?.lastServiceAt)} />
-                <Field
-                  label="Status"
-                  value={
-                    <StatusPill tone={statusTone}>
-                      {asset?.status ?? (isLoading ? "Loading" : "Unknown")}
-                    </StatusPill>
                   }
                 />
               </div>

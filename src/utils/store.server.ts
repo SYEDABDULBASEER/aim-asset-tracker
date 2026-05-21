@@ -71,25 +71,11 @@ function createStore(): Store {
   };
 }
 
-export function syncBook1AssetsIntoStore(store: Store) {
+/** Replace in-memory assets with PCs from Assets Data 2025 only (removes old Book1/demo rows). */
+export function replaceStoreAssetsWithSeed(store: Store) {
+  store.assets.clear();
   for (const seed of buildSeedAssets()) {
-    const existing = store.assets.get(seed.id);
-    store.assets.set(
-      seed.id,
-      AssetSchema.parse({
-        ...existing,
-        ...seed,
-        assignedTo: existing?.assignedTo ?? seed.assignedTo,
-        department: existing?.department ?? seed.department,
-        status: existing?.status ?? seed.status,
-        warrantyUntil: existing?.warrantyUntil ?? seed.warrantyUntil ?? null,
-        lastServiceAt: existing?.lastServiceAt ?? seed.lastServiceAt ?? null,
-        serial: seed.serial ?? existing?.serial ?? null,
-        location: existing?.location ?? seed.location ?? null,
-        purchaseDate: existing?.purchaseDate ?? seed.purchaseDate ?? null,
-        specifications: existing?.specifications ?? seed.specifications ?? null,
-      }),
-    );
+    store.assets.set(seed.id, AssetSchema.parse(seed));
   }
 }
 

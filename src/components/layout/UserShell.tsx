@@ -1,31 +1,16 @@
-import { Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
-import { Boxes, Home, LifeBuoy, LogOut } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useAuth } from "@/lib/auth/AuthProvider";
-import { formatAppRoleLabel } from "@/lib/auth/roles";
-import {
-  LANDING_PATH,
-  USER_HOME_PATH,
-  USER_REQUEST_SUPPORT_PATH,
-} from "@/lib/auth/routing";
-import { firebaseAuthRequired } from "@/lib/firebase/env";
+import { Link, Outlet, useRouterState } from "@tanstack/react-router";
+import { Boxes, Home, LifeBuoy } from "lucide-react";
+import { USER_HOME_PATH, USER_REQUEST_SUPPORT_PATH } from "@/lib/auth/routing";
+import { usePortalRequester } from "@/components/user/PortalRequesterProvider";
 
 const navItems = [
-  { title: "Home", to: USER_HOME_PATH, icon: Home },
-  { title: "Report issue", to: USER_REQUEST_SUPPORT_PATH, icon: LifeBuoy },
+  { title: "My portal", to: USER_HOME_PATH, icon: Home },
+  { title: "New ticket", to: USER_REQUEST_SUPPORT_PATH, icon: LifeBuoy },
 ] as const;
 
 export function UserShell() {
-  const auth = useAuth();
-  const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const displayName = auth.user?.displayName || auth.user?.email || "Employee";
-  const showGuest = firebaseAuthRequired() && !auth.user;
-
-  const handleSignOut = async () => {
-    if (auth.user) await auth.signOut();
-    await navigate({ to: LANDING_PATH });
-  };
+  const { email, name, deskNumber, hasIdentity } = usePortalRequester();
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground">
@@ -36,27 +21,18 @@ export function UserShell() {
           </div>
           <div className="leading-tight">
             <div className="text-sm font-semibold">Employee Support</div>
-            <div className="text-[11px] text-muted-foreground">EClickTech Solutions</div>
+            <div className="text-[11px] text-muted-foreground">Raise & track tickets</div>
           </div>
         </Link>
-        <div className="flex items-center gap-3">
-          <div className="hidden sm:block text-right leading-tight">
-            <div className="text-xs font-medium">{displayName}</div>
-            <div className="text-[10px] text-muted-foreground">
-              {showGuest ? "Not signed in" : formatAppRoleLabel(auth.role)}
-            </div>
+        {hasIdentity ? (
+          <div className="text-right leading-tight hidden sm:block">
+            <div className="text-xs font-medium">{name || "Employee"}</div>
+            <div className="text-[10px] text-muted-foreground truncate max-w-[200px]">{email}</div>
+            {deskNumber ? (
+              <div className="text-[10px] text-muted-foreground">Desk {deskNumber}</div>
+            ) : null}
           </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="gap-1.5"
-            onClick={() => void handleSignOut()}
-          >
-            <LogOut className="h-3.5 w-3.5" />
-            Sign out
-          </Button>
-        </div>
+        ) : null}
       </header>
       <nav className="border-b border-border bg-muted/30 px-6 py-2 flex gap-2">
         {navItems.map((item) => {

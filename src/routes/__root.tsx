@@ -8,6 +8,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import appCss from "../styles.css?url";
+import { AuthenticatedFetchBootstrap } from "@/components/auth/AuthenticatedFetchBootstrap";
 import { AuthGate } from "@/components/auth/AuthGate";
 import { AuthProvider } from "@/lib/auth/AuthProvider";
 import { Toaster } from "@/components/ui/sonner";
@@ -110,6 +111,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
+        <AuthenticatedFetchBootstrap />
         <AuthGate />
       </AuthProvider>
       <Toaster richColors position="top-right" />

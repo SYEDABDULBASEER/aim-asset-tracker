@@ -9,6 +9,8 @@ const STATUS_OPTIONS = ["Active", "In Repair", "Available", "Lost", "Retired"] a
 const HEADER_ALIASES: Record<string, keyof AssetFormValues> = {
   id: "id",
   assetid: "id",
+  sno: "serial",
+  serialno: "serial",
   name: "name",
   assetname: "name",
   category: "category",
@@ -19,6 +21,9 @@ const HEADER_ALIASES: Record<string, keyof AssetFormValues> = {
   lastserviceat: "lastServiceAt",
   serial: "serial",
   location: "location",
+  desk: "location",
+  deskno: "location",
+  desknumber: "location",
   purchasedate: "purchaseDate",
   specifications: "specifications",
   specs: "specifications",

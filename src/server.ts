@@ -1,4 +1,5 @@
 import "./lib/error-capture";
+import "./lib/firebase/load-server-env";
 
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";

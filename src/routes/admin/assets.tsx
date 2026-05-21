@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Card, PageHeader, StatusPill } from "@/components/ui-kit/Card";
+import { Card, PageHeader } from "@/components/ui-kit/Card";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -75,20 +75,6 @@ const WARRANTY_BAND_OPTIONS: { value: WarrantyBand; label: string }[] = [
   { value: "expired", label: "Expired" },
   { value: "unknown", label: "Unknown" },
 ];
-
-function tone(s: string) {
-  const v =
-    s === "Active"
-      ? "success"
-      : s === "In Repair"
-        ? "warning"
-        : s === "Available"
-          ? "info"
-          : s === "Lost"
-            ? "danger"
-            : "muted";
-  return (v satisfies Parameters<typeof StatusPill>[0]["tone"]) ? v : "muted";
-}
 
 type FilterPopoverProps<T extends string> = {
   label: string;
@@ -533,9 +519,16 @@ function AssetsPage() {
         {isError && (
           <div className="px-4 py-3 text-sm text-destructive border-b border-border flex flex-wrap items-center gap-3">
             <span>{formatQueryError(error)}</span>
-            <Button type="button" size="sm" variant="outline" onClick={() => void refetch()}>
-              Retry
-            </Button>
+            {formatQueryError(error).toLowerCase().includes("sign in required") ||
+            formatQueryError(error).toLowerCase().includes("invalid or expired session") ? (
+              <Button type="button" size="sm" asChild>
+                <Link to="/login">Sign in again</Link>
+              </Button>
+            ) : (
+              <Button type="button" size="sm" variant="outline" onClick={() => void refetch()}>
+                Retry
+              </Button>
+            )}
           </div>
         )}
         <table className="w-full text-sm">
@@ -545,11 +538,9 @@ function AssetsPage() {
                 <input type="checkbox" className="accent-[var(--primary)]" />
               </th>
               <th className="text-left font-medium px-4 py-3">Asset ID</th>
-              <th className="text-left font-medium px-4 py-3">Asset Name</th>
-              <th className="text-left font-medium px-4 py-3">Category</th>
-              <th className="text-left font-medium px-4 py-3">Assigned To</th>
-              <th className="text-left font-medium px-4 py-3">Department</th>
-              <th className="text-left font-medium px-4 py-3">Status</th>
+              <th className="text-left font-medium px-4 py-3">S No</th>
+              <th className="text-left font-medium px-4 py-3">Name</th>
+              <th className="text-left font-medium px-4 py-3">Desk</th>
               <th className="px-4 py-3" />
             </tr>
           </thead>
@@ -563,20 +554,17 @@ function AssetsPage() {
                   <Link
                     to="/admin/assets/$id"
                     params={{ id: a.id }}
+                    search={{ q: undefined }}
                     className="text-primary hover:underline"
                   >
                     {a.id}
                   </Link>
                 </td>
+                <td className="px-4 py-3 text-muted-foreground font-mono text-xs">{a.serial ?? "—"}</td>
                 <td className="px-4 py-3">
                   <AssetNameCell asset={a} />
                 </td>
-                <td className="px-4 py-3 text-muted-foreground">{a.category}</td>
-                <td className="px-4 py-3">{a.assignedTo ?? "—"}</td>
-                <td className="px-4 py-3 text-muted-foreground">{a.department ?? "—"}</td>
-                <td className="px-4 py-3">
-                  <StatusPill tone={tone(a.status)}>{a.status}</StatusPill>
-                </td>
+                <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{a.location ?? "—"}</td>
                 <td className="px-4 py-3">
                   <div className="flex items-center justify-end gap-1">
                     {canWriteAssets ? (

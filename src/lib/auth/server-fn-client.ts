@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { firebaseAuthRequired } from "@/lib/firebase/env";
+import { staffWorkspaceAuthRequired } from "@/lib/auth/staff-workspace-auth";
 
 const PATCHED = Symbol.for("assetdesk.authFetchPatched");
 
@@ -14,7 +14,7 @@ export function getNativeFetch(): typeof fetch {
 /** Patch global fetch so server functions include the Firebase Bearer token. */
 export function installAuthenticatedServerFetch(): void {
   if (typeof window === "undefined") return;
-  if (!firebaseAuthRequired()) return;
+  if (!staffWorkspaceAuthRequired()) return;
 
   const globalRef = window as Window & { [PATCHED]?: boolean };
   if (globalRef[PATCHED]) return;

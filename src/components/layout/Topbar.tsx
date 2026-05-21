@@ -1,23 +1,13 @@
-import { Search, Bell, ChevronDown, LogOut, Loader2, Inbox } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Search, Bell, Loader2, Inbox, LogOut } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { formatAppRoleLabel, canRead } from "@/lib/auth/roles";
-import { useAuth } from "@/lib/auth/AuthProvider";
-import { LANDING_PATH } from "@/lib/auth/routing";
-import { firebaseAuthRequired } from "@/lib/firebase/env";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
+import { useAuth } from "@/lib/auth/AuthProvider";
+import { formatAppRoleLabel } from "@/lib/auth/roles";
 import { callAuthenticatedServerFn } from "@/lib/auth/authenticated-server-fn";
 import { getNotificationFeed, type NotificationFeedItem } from "@/utils/notifications.functions";
 
@@ -59,14 +49,26 @@ function NotificationEntryLink({
   );
 }
 
-function initialsFromUser(label: string) {
-  const parts = label
-    .split(/[\s@._-]+/)
-    .map((part) => part.trim())
-    .filter(Boolean);
-  if (parts.length === 0) return "AD";
-  if (parts.length === 1) return parts[0]!.slice(0, 2).toUpperCase();
-  return `${parts[0]![0] ?? ""}${parts[1]![0] ?? ""}`.toUpperCase();
+function sessionSubtitle(auth: ReturnType<typeof useAuth>): string {
+  if (!auth.configured) return "In-memory demo";
+  if (!auth.authRequired) return "Demo mode (auth not enforced)";
+  if (auth.loading) return "Checking session…";
+  if (!auth.user) return "Not signed in";
+  const email = auth.user.email ?? auth.user.uid;
+  return `${email} · ${formatAppRoleLabel(auth.role)}`;
+}
+
+function sessionInitials(auth: ReturnType<typeof useAuth>): string {
+  const email = auth.user?.email?.trim();
+  if (email) {
+    const local = email.split("@")[0] ?? "";
+    const parts = local.split(/[._-]+/).filter(Boolean);
+    if (parts.length >= 2) {
+      return `${parts[0]![0] ?? ""}${parts[1]![0] ?? ""}`.toUpperCase();
+    }
+    return local.slice(0, 2).toUpperCase() || "IT";
+  }
+  return "IT";
 }
 
 export function Topbar() {
@@ -78,20 +80,6 @@ export function Topbar() {
     if (typeof window === "undefined") return null;
     return localStorage.getItem(NOTIFY_ACK_STORAGE_KEY);
   });
-  const authEnforced = firebaseAuthRequired();
-  const canSeeNotifications = canRead(auth.role, "reports");
-  const displayName =
-    auth.user?.displayName ||
-    auth.user?.email ||
-    (auth.configured && !authEnforced ? "Developer" : "Account");
-  const roleLabel = auth.configured
-    ? auth.user
-      ? formatAppRoleLabel(auth.role)
-      : authEnforced
-        ? "Sign in required"
-        : "Admin (dev)"
-    : "Admin";
-  const initials = initialsFromUser(displayName);
 
   const {
     data: notifyData,
@@ -100,7 +88,6 @@ export function Topbar() {
   } = useQuery({
     queryKey: ["notification-feed"],
     queryFn: () => callAuthenticatedServerFn(getNotificationFeed, { data: { limit: 30 } }),
-    enabled: canSeeNotifications,
     refetchInterval: 60_000,
     staleTime: 45_000,
   });
@@ -133,11 +120,6 @@ export function Topbar() {
     return () => window.clearTimeout(timer);
   }, [navigate, query]);
 
-  const handleSignOut = async () => {
-    if (auth.user) await auth.signOut();
-    await navigate({ to: LANDING_PATH });
-  };
-
   return (
     <header className="h-16 shrink-0 bg-card border-b border-border flex items-center gap-4 px-6">
       <div className="relative flex-1 max-w-xl">
@@ -166,12 +148,11 @@ export function Topbar() {
               variant="ghost"
               size="icon"
               className="relative h-9 w-9 shrink-0 rounded-lg"
-              disabled={!canSeeNotifications}
               aria-label="Notifications"
-              title={canSeeNotifications ? "Activity notifications" : "Notifications unavailable"}
+              title="Activity notifications"
             >
               <Bell className="h-4 w-4 text-foreground" />
-              {canSeeNotifications && unreadCount > 0 ? (
+              {unreadCount > 0 ? (
                 <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-[10px] font-semibold text-destructive-foreground flex items-center justify-center ring-2 ring-card">
                   {unreadCount > 9 ? "9+" : unreadCount}
                 </span>
@@ -185,9 +166,7 @@ export function Topbar() {
                 Recent workspace activity (refreshes every minute).
               </p>
             </div>
-            {!canSeeNotifications ? (
-              <p className="p-4 text-sm text-muted-foreground">Your role cannot view this feed.</p>
-            ) : notifyLoading ? (
+            {notifyLoading ? (
               <div className="flex items-center justify-center gap-2 py-10 text-muted-foreground text-sm">
                 <Loader2 className="h-4 w-4 animate-spin" />
                 Loading…
@@ -225,7 +204,7 @@ export function Topbar() {
                 </ul>
               </ScrollArea>
             )}
-            {canSeeNotifications && notifyItems.length > 0 ? (
+            {notifyItems.length > 0 ? (
               <div className="border-t border-border px-2 py-1.5">
                 <Button
                   type="button"
@@ -244,38 +223,30 @@ export function Topbar() {
             ) : null}
           </PopoverContent>
         </Popover>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button className="flex items-center gap-2 h-9 pl-1 pr-2 rounded-lg hover:bg-muted transition">
-              <div className="h-7 w-7 rounded-full bg-gradient-to-br from-primary to-chart-5 text-white text-xs font-semibold flex items-center justify-center">
-                {initials}
-              </div>
-              <div className="hidden sm:block text-left leading-tight">
-                <div className="text-xs font-medium">{displayName}</div>
-                <div className="text-[10px] text-muted-foreground">{roleLabel}</div>
-              </div>
-              <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuLabel>Account</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            {auth.user ? (
-              <DropdownMenuItem onClick={() => void handleSignOut()}>
-                <LogOut className="h-4 w-4" />
-                Sign out
-              </DropdownMenuItem>
-            ) : auth.configured && !authEnforced ? (
-              <DropdownMenuItem disabled className="opacity-70">
-                Demo mode (no sign-in)
-              </DropdownMenuItem>
-            ) : (
-              <DropdownMenuItem onClick={() => void navigate({ to: "/login" })}>
-                Sign in
-              </DropdownMenuItem>
-            )}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="hidden sm:flex items-center gap-2 h-9 px-2 rounded-lg max-w-[280px]">
+          <div className="h-7 w-7 rounded-full bg-gradient-to-br from-primary to-chart-5 text-white text-xs font-semibold flex items-center justify-center shrink-0">
+            {sessionInitials(auth)}
+          </div>
+          <div className="text-left leading-tight min-w-0 flex-1">
+            <div className="text-xs font-medium truncate">Asset Desk</div>
+            <div className="text-[10px] text-muted-foreground truncate" title={sessionSubtitle(auth)}>
+              {sessionSubtitle(auth)}
+            </div>
+          </div>
+          {auth.authRequired && auth.user ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 shrink-0"
+              title="Sign out"
+              aria-label="Sign out"
+              onClick={() => void auth.signOut()}
+            >
+              <LogOut className="h-4 w-4" />
+            </Button>
+          ) : null}
+        </div>
       </div>
     </header>
   );

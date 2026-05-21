@@ -160,6 +160,7 @@ function Allocation() {
                   <Link
                     to="/admin/assets/$id"
                     params={{ id: row.assetId }}
+                    search={{ q: undefined }}
                     className="text-primary hover:underline"
                   >
                     {row.assetId}

@@ -1,5 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { useIsAdmin } from "@/lib/auth/AuthProvider";
+import { useAuth } from "@/lib/auth/AuthProvider";
+import { isStaffRole } from "@/lib/auth/roles";
 import {
   ADMIN_ALLOCATION_PATH,
   ADMIN_ASSETS_PATH,
@@ -38,8 +39,9 @@ const items = [
 
 export function AppSidebar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const isAdmin = useIsAdmin();
-  const navItems = isAdmin ? items : items.filter((item) => item.url !== ADMIN_SETTINGS_PATH);
+  const { role } = useAuth();
+  /** Settings is visible to all IT staff; seeding inside Settings requires admin role. */
+  const navItems = isStaffRole(role) ? items : items.filter((item) => item.url !== ADMIN_SETTINGS_PATH);
 
   return (
     <aside className="hidden md:flex w-64 shrink-0 flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border">

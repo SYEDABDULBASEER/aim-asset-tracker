@@ -40,7 +40,7 @@ const READ_MATRIX: Record<AppRole, readonly PermissionDomain[]> = {
 export function normalizeAppRole(value: unknown): AppRole {
   if (value === "admin" || value === "agent" || value === "viewer" || value === "user")
     return value;
-  return "viewer";
+  return "admin";
 }
 
 export function isStaffRole(role: AppRole): role is StaffRole {

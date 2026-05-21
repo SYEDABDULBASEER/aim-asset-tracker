@@ -1,5 +1,19 @@
-import { firebaseAuthRequired } from "@/lib/firebase/env";
+import { staffWorkspaceAuthRequired } from "@/lib/auth/staff-workspace-auth";
 import { appendFirebaseAuthHeader } from "@/lib/auth/firebase-auth-header";
+
+function errorMessageFromResponseBody(body: string, status: number): string {
+  const trimmed = body.trim();
+  if (!trimmed) return `Request failed (${status})`;
+  try {
+    const json = JSON.parse(trimmed) as { message?: unknown };
+    if (typeof json.message === "string" && json.message.trim()) {
+      return json.message;
+    }
+  } catch {
+    /* plain text */
+  }
+  return trimmed.length > 200 ? `${trimmed.slice(0, 200)}…` : trimmed;
+}
 
 function mergeHeaders(input: RequestInfo | URL, init?: RequestInit): Headers {
   const headers = new Headers(init?.headers);
@@ -22,7 +36,7 @@ export async function authenticatedServerFnFetch(
 ): Promise<Response> {
   const headers = mergeHeaders(input, init);
 
-  if (firebaseAuthRequired()) {
+  if (staffWorkspaceAuthRequired()) {
     try {
       await appendFirebaseAuthHeader(headers);
     } catch (error) {
@@ -30,9 +44,15 @@ export async function authenticatedServerFnFetch(
     }
   }
 
-  if (input instanceof Request) {
-    return fetchImpl(new Request(input, { ...init, headers }));
+  const response =
+    input instanceof Request
+      ? await fetchImpl(new Request(input, { ...init, headers }))
+      : await fetchImpl(input, { ...init, headers });
+
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(errorMessageFromResponseBody(body, response.status));
   }
 
-  return fetchImpl(input, { ...init, headers });
+  return response;
 }

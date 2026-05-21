@@ -2,7 +2,9 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { appendAuditLog } from "@/lib/audit/write-audit";
 import { AuthError, requireAuth, requireRead, requireWrite } from "@/lib/auth/require-auth";
-import { isEndUserRole } from "@/lib/auth/roles";
+import { isPortalGuestAuth } from "@/lib/auth/employee-portal";
+import { isEmployeeWorkEmailAllowed } from "@/lib/auth/work-email-domains";
+import { isEndUserRole, isStaffRole } from "@/lib/auth/roles";
 import { getServerAuth } from "@/lib/auth/request-context";
 import {
   ticketBelongsToRequester,
@@ -23,11 +25,14 @@ import {
   TicketCreateInputSchema,
   TicketListQuerySchema,
   TicketSchema,
+  PortalTicketDetailQuerySchema,
+  PortalTicketListQuerySchema,
   TicketStatusUpdateSchema,
   TicketUpdateSchema,
   TicketUserPortalCreateSchema,
   type Ticket,
   type TicketPriority,
+  type TicketStatus,
   type TicketUpdateInput,
 } from "@/lib/models";
 import { loadAllAssets } from "./assets-source.server";
@@ -69,18 +74,35 @@ async function persistTicket(ticket: Ticket): Promise<Ticket> {
   return normalized;
 }
 
+async function loadTicketById(id: string): Promise<Ticket | null> {
+  if (!shouldUseInMemoryStore()) return firestoreGetTicketById(id);
+  return getStore().tickets.get(id) ?? null;
+}
+
+/** Status-only update — allowed even when the ticket is closed (reopen / resolve / close). */
+async function setTicketStatus(id: string, status: TicketStatus): Promise<Ticket | null> {
+  const now = new Date().toISOString();
+  const prev = await loadTicketById(id);
+  if (!prev) return null;
+
+  const next = TicketSchema.parse({
+    ...prev,
+    status,
+    updatedAt: now,
+    id: prev.id,
+    messages: prev.messages,
+  });
+
+  return persistTicket(next);
+}
+
 async function mergeTicket(
   id: string,
   patch: Omit<TicketUpdateInput, "id">,
 ): Promise<Ticket | null> {
   const now = new Date().toISOString();
 
-  async function loadPrev(): Promise<Ticket | null> {
-    if (!shouldUseInMemoryStore()) return firestoreGetTicketById(id);
-    return getStore().tickets.get(id) ?? null;
-  }
-
-  const prev = await loadPrev();
+  const prev = await loadTicketById(id);
   if (!prev) return null;
 
   if (prev.status === "Closed") {
@@ -209,47 +231,80 @@ export const createTicket = createServerFn({ method: "POST" })
     return saved;
   });
 
-function requirePortalRequester() {
-  const auth = requireAuth();
-  if (!isEndUserRole(auth.role)) {
-    throw new AuthError("Only employee accounts can access the user ticket portal.", 403);
+function resolveEmployeePortalListQuery(data: {
+  requesterEmail: string;
+  requesterName?: string | null;
+}): { requesterEmail: string; requesterName: string | null } {
+  if (!firebaseAuthRequired()) {
+    return {
+      requesterEmail: data.requesterEmail.trim().toLowerCase(),
+      requesterName: data.requesterName?.trim() || null,
+    };
   }
-  return auth;
-}
 
-/** Tickets submitted by the signed-in employee (matched by email / name). */
-export const listMyUserTickets = createServerFn({ method: "GET" }).handler(async () => {
-  const auth = requirePortalRequester();
-  if (!auth.email?.trim()) {
+  const auth = getServerAuth();
+  if (!auth) throw new AuthError("Session required.", 401);
+
+  if (isPortalGuestAuth(auth)) {
+    const email = data.requesterEmail.trim().toLowerCase();
+    if (!email) throw new AuthError("Work email is required.", 400);
+    if (!isEmployeeWorkEmailAllowed(email)) {
+      throw new AuthError(
+        "This email is not allowed for the employee portal. Use your organization work email.",
+        403,
+      );
+    }
+    return { requesterEmail: email, requesterName: data.requesterName?.trim() || null };
+  }
+
+  if (isStaffRole(auth.role)) {
     throw new AuthError(
-      "Your account has no email on file. Sign out and sign in again with an email/password account.",
-      400,
+      "You are signed in to the IT workspace. Sign out first, or open the employee portal in a private window.",
+      403,
     );
   }
 
-  try {
-    const all = await loadAllTickets();
-    const items: UserTicketSummary[] = all
-      .filter((t) => ticketBelongsToRequester(t, auth.email, null))
-      .map((t) => toUserTicketSummary(TicketSchema.parse(t)))
-      .sort((a, b) => (a.updatedAt < b.updatedAt ? 1 : a.updatedAt > b.updatedAt ? -1 : 0));
-    return { items };
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to load tickets.";
-    if (message.includes("Firebase Admin is not configured")) {
-      throw new AuthError(
-        "Server cannot read tickets. Add FIREBASE_SERVICE_ACCOUNT_PATH to your .env file.",
-        503,
-      );
+  if (isEndUserRole(auth.role) && auth.email?.trim()) {
+    const email = auth.email.trim().toLowerCase();
+    if (email !== data.requesterEmail.trim().toLowerCase()) {
+      throw new AuthError("Email does not match your account.", 403);
     }
-    throw error instanceof Error ? error : new Error(message);
+    return { requesterEmail: email, requesterName: data.requesterName?.trim() || null };
   }
-});
+
+  throw new AuthError("Unauthorized.", 403);
+}
+
+/** Tickets raised by an employee (matched by work email / name). */
+export const listMyUserTickets = createServerFn({ method: "GET" })
+  .inputValidator(PortalTicketListQuerySchema)
+  .handler(async ({ data }) => {
+    const { requesterEmail, requesterName } = resolveEmployeePortalListQuery(data);
+
+    try {
+      const all = await loadAllTickets();
+      const items: UserTicketSummary[] = all
+        .filter((t) => ticketBelongsToRequester(t, requesterEmail, requesterName))
+        .map((t) => toUserTicketSummary(TicketSchema.parse(t)))
+        .sort((a, b) => (a.updatedAt < b.updatedAt ? 1 : a.updatedAt > b.updatedAt ? -1 : 0));
+      return { items };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to load tickets.";
+      if (message.includes("Firebase Admin is not configured")) {
+        throw new AuthError(
+          "Server cannot read tickets. Add FIREBASE_SERVICE_ACCOUNT_PATH to your .env file.",
+          503,
+        );
+      }
+      throw error instanceof Error ? error : new Error(message);
+    }
+  });
 
 export const getMyUserTicket = createServerFn({ method: "GET" })
-  .inputValidator(z.object({ id: z.string().min(1) }))
+  .inputValidator(PortalTicketDetailQuerySchema)
   .handler(async ({ data }) => {
-    const auth = requirePortalRequester();
+    const { requesterEmail, requesterName } = resolveEmployeePortalListQuery(data);
+
     let ticket: Ticket | null = null;
     if (!shouldUseInMemoryStore()) {
       ticket = await firestoreGetTicketById(data.id);
@@ -257,17 +312,16 @@ export const getMyUserTicket = createServerFn({ method: "GET" })
       const raw = getStore().tickets.get(data.id);
       ticket = raw ? TicketSchema.parse(raw) : null;
     }
-    if (!ticket || !ticketBelongsToRequester(ticket, auth.email, null)) {
+    if (!ticket || !ticketBelongsToRequester(ticket, requesterEmail, requesterName)) {
       throw new AuthError("Ticket not found.", 404);
     }
     return TicketSchema.parse(ticket);
   });
 
-/** Public self-service: no sign-in. Uses Admin SDK when configured so Firestore rules do not block writes. */
+/** Employee self-service ticket. Uses Admin SDK when configured so Firestore rules do not block writes. */
 export const createUserTicket = createServerFn({ method: "POST" })
   .inputValidator(TicketUserPortalCreateSchema)
   .handler(async ({ data }) => {
-    const portalAuth = firebaseAuthRequired() ? requirePortalRequester() : getServerAuth();
     const assets = await loadAllAssets();
     const assetId = data.assetId?.trim() ? data.assetId.trim() : null;
     if (assetId && !assets.some((a) => a.id === assetId)) {
@@ -276,10 +330,7 @@ export const createUserTicket = createServerFn({ method: "POST" })
 
     const now = new Date().toISOString();
     const id = newTicketId();
-    const email =
-      data.requesterEmail?.trim() ||
-      (portalAuth?.email && isEndUserRole(portalAuth.role) ? portalAuth.email : null) ||
-      null;
+
     const messages = [
       {
         id: crypto.randomUUID(),
@@ -289,6 +340,65 @@ export const createUserTicket = createServerFn({ method: "POST" })
       },
     ];
 
+    if (firebaseAuthRequired()) {
+      const auth = getServerAuth();
+      if (!auth) throw new AuthError("Session required.", 401);
+
+      let email: string;
+
+      if (isPortalGuestAuth(auth)) {
+        email = data.requesterEmail?.trim().toLowerCase() ?? "";
+        if (!email) throw new Error("Work email is required so IT can contact you.");
+        if (!isEmployeeWorkEmailAllowed(email)) {
+          throw new Error("Use your organization work email for this portal.");
+        }
+      } else if (isStaffRole(auth.role)) {
+        throw new AuthError(
+          "Sign out of the IT workspace before submitting from the employee portal, or use a private window.",
+          403,
+        );
+      } else if (isEndUserRole(auth.role) && auth.email?.trim()) {
+        email = auth.email.trim().toLowerCase();
+      } else {
+        throw new AuthError("Unauthorized.", 403);
+      }
+
+      const ticket = TicketSchema.parse({
+        id,
+        title: data.title.trim(),
+        assetId,
+        priority: data.priority,
+        status: "Open" as const,
+        assigneeName: null,
+        requesterName: data.requesterName.trim(),
+        requesterEmail: email,
+        deskNumber: data.deskNumber.trim(),
+        openedVia: "user_portal",
+        createdAt: now,
+        updatedAt: now,
+        slaDueAt: computeSlaDueAt(now, data.priority),
+        messages,
+      });
+      const saved = await persistTicket(ticket);
+      await appendAuditLog({
+        actorUid: auth.uid,
+        actorEmail: email,
+        action: "ticket.create.user_portal",
+        entityType: "ticket",
+        entityId: saved.id,
+        metadata: {
+          requesterName: data.requesterName.trim(),
+          deskNumber: data.deskNumber.trim(),
+        },
+      });
+      return saved;
+    }
+
+    const portalAuth = getServerAuth();
+    const email =
+      data.requesterEmail?.trim() ||
+      (portalAuth?.email && isEndUserRole(portalAuth.role) ? portalAuth.email : null) ||
+      null;
     const ticket = TicketSchema.parse({
       id,
       title: data.title.trim(),
@@ -298,6 +408,7 @@ export const createUserTicket = createServerFn({ method: "POST" })
       assigneeName: null,
       requesterName: data.requesterName.trim(),
       requesterEmail: email,
+      deskNumber: data.deskNumber.trim(),
       openedVia: "user_portal",
       createdAt: now,
       updatedAt: now,
@@ -312,7 +423,10 @@ export const createUserTicket = createServerFn({ method: "POST" })
       action: "ticket.create.user_portal",
       entityType: "ticket",
       entityId: saved.id,
-      metadata: { requesterName: data.requesterName.trim() },
+      metadata: {
+        requesterName: data.requesterName.trim(),
+        deskNumber: data.deskNumber.trim(),
+      },
     });
     return saved;
   });
@@ -339,7 +453,7 @@ export const updateTicketStatus = createServerFn({ method: "POST" })
   .inputValidator(TicketStatusUpdateSchema)
   .handler(async ({ data }) => {
     const auth = requireWrite("tickets");
-    const saved = await mergeTicket(data.id, { status: data.status });
+    const saved = await setTicketStatus(data.id, data.status);
     if (saved) {
       await appendAuditLog({
         actorUid: auth.uid,

@@ -65,14 +65,14 @@ export const getNotificationFeed = createServerFn({ method: "GET" })
   .handler(async ({ data }) => {
     await requireRead("reports");
     const limit = data?.limit ?? 30;
-    const logs = await listAllAuditLogs(limit);
+    const logs = (await listAllAuditLogs()).slice(0, limit);
     return {
       items: logs.map((entry) => ({
         id: entry.id,
         action: entry.action,
         entityType: entry.entityType,
         entityId: entry.entityId,
-        actorLabel: entry.actorLabel,
+        actorLabel: entry.actorEmail ?? entry.actorUid,
         createdAt: entry.createdAt,
         link: linkForAudit(entry),
       })) satisfies NotificationFeedItem[],

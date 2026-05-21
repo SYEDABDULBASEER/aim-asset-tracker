@@ -121,6 +121,8 @@ export const TicketSchema = z.object({
   status: TicketStatusSchema,
   assigneeName: z.string().nullable(),
   requesterName: z.string().nullable(),
+  /** Office / desk number for user-portal tickets (e.g. D-204). */
+  deskNumber: z.string().max(50).nullable().optional(),
   /** Set for user-portal submissions; used to show “my tickets” to the requester. */
   requesterEmail: z.union([z.string().email(), z.null()]).optional(),
   /** Submitted from the public “report an issue” page vs staff tooling. */
@@ -149,6 +151,7 @@ export const TicketUserPortalCreateSchema = z.object({
   description: z.string().min(10).max(8000),
   requesterName: z.string().min(2).max(200),
   requesterEmail: z.union([z.string().email().max(320), z.literal("")]).optional(),
+  deskNumber: z.string().min(1).max(50),
   priority: TicketPrioritySchema,
   assetId: z.string().min(1).max(120).nullable().optional(),
 });
@@ -172,6 +175,21 @@ export const TicketStatusUpdateSchema = z.object({
   status: TicketStatusSchema,
 });
 export type TicketStatusUpdateInput = z.infer<typeof TicketStatusUpdateSchema>;
+
+/** Employee portal — list tickets for a requester email. */
+export const PortalTicketListQuerySchema = z.object({
+  requesterEmail: z.string().email().max(320),
+  requesterName: z.string().max(200).optional(),
+});
+export type PortalTicketListQuery = z.infer<typeof PortalTicketListQuerySchema>;
+
+/** Employee portal — ticket detail scoped to requester. */
+export const PortalTicketDetailQuerySchema = z.object({
+  id: z.string().min(1),
+  requesterEmail: z.string().email().max(320),
+  requesterName: z.string().max(200).optional(),
+});
+export type PortalTicketDetailQuery = z.infer<typeof PortalTicketDetailQuerySchema>;
 
 export const TicketCommentInputSchema = z.object({
   id: z.string().min(1),
@@ -371,7 +389,7 @@ export const AuditLogEntrySchema = z.object({
   entityType: z.string().min(1),
   entityId: z.string().min(1),
   createdAt: z.string().min(1),
-  metadata: z.record(z.unknown()).nullable(),
+  metadata: z.record(z.union([z.string(), z.number(), z.boolean(), z.null()])).nullable(),
 });
 export type AuditLogEntry = z.infer<typeof AuditLogEntrySchema>;
 

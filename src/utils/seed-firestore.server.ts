@@ -1,6 +1,6 @@
 import { isFirebaseAdminConfigured } from "@/lib/firebase/admin";
 import { isFirebaseConfigured } from "@/lib/firebase/env";
-import { firestoreSeedAssets } from "@/lib/firebase/assets.firestore";
+import { firestoreSyncAssetsExact } from "@/lib/firebase/assets.firestore";
 import { firestoreSeedEmployees } from "@/lib/firebase/employees.firestore";
 import { firestoreSeedMaintenanceJobs } from "@/lib/firebase/maintenance.firestore";
 import { firestoreSeedTickets } from "@/lib/firebase/tickets.firestore";
@@ -29,7 +29,7 @@ export async function seedAllDemoDataToFirestore(): Promise<{
   }
 
   const assets = buildSeedAssets();
-  const { written: assetsWritten } = await firestoreSeedAssets(assets);
+  const { written: assetsWritten } = await firestoreSyncAssetsExact(assets);
   const tickets = buildSeedTickets();
   const { written: ticketsWritten } = await firestoreSeedTickets(tickets);
   const transfers = buildSeedTransfers();

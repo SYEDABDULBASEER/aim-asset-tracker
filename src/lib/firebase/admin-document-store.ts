@@ -9,7 +9,7 @@ function toFirestoreFields<T extends { id: string }>(value: T): Record<string, u
 
 export function createAdminDocumentStore<T extends { id: string }>(
   collectionName: string,
-  schema: z.ZodType<T>,
+  schema: z.ZodType<T, z.ZodTypeDef, unknown>,
 ) {
   async function listAll(): Promise<T[]> {
     const db = getFirebaseAdminDb();

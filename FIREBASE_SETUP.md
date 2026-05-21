@@ -111,12 +111,41 @@ This project can be built for **Cloudflare Workers** (`wrangler.jsonc`). The **F
 
 For **local `npm run dev`** and typical **Node SSR** deployments, the current integration is appropriate. Before going live on Workers, run a production build and confirm Firestore calls succeed in that runtime.
 
+## Go-live checklist (production)
+
+Complete these steps before pointing real users at the app.
+
+1. **Firebase project** — Firestore + Storage enabled; **Authentication → Sign-in method → Email/Password** turned on.
+2. **`.env`** — All six `VITE_FIREBASE_*` values set. **Do not** set `VITE_ALLOW_DEMO_AUTH` in production.
+3. **Service account** — `FIREBASE_SERVICE_ACCOUNT_PATH` or `FIREBASE_SERVICE_ACCOUNT_JSON` set locally; use Wrangler secret `FIREBASE_SERVICE_ACCOUNT_JSON` on Cloudflare.
+4. **Deploy rules** — From project root (after `firebase login` and `firebase use <projectId>`):
+   ```bash
+   npm run firebase:deploy-rules
+   ```
+5. **First admin** — In Firebase Console → Authentication, create a user, then:
+   ```bash
+   npm run auth:set-role -- you@company.com admin
+   ```
+   Sign in at `/login`. Staff self-signup is disabled when auth is enforced.
+6. **Seed data (optional)** — Sign in as admin → **Settings** → **Seed Firestore with demo data** (non-production only).
+7. **Verify** — `/login` → admin workspace loads assets/tickets from Firestore; employee `/user/login` → create account → raise ticket.
+8. **Cloudflare** — Production build must include the same `VITE_FIREBASE_*` vars at build time; runtime needs `FIREBASE_SERVICE_ACCOUNT_JSON`.
+
+| Role    | Sign-in URL   | Access                                      |
+| ------- | ------------- | ------------------------------------------- |
+| `admin` | `/login`      | Full workspace + settings + seed (dev)      |
+| `agent` | `/login`      | Operational write on assets/tickets/etc.    |
+| `viewer`| `/login`      | Read-only operational data                    |
+| `user`  | `/user/login` | Employee portal only (own tickets by email) |
+
 ## Troubleshooting
 
 | Symptom                       | What to check                                                                           |
 | ----------------------------- | --------------------------------------------------------------------------------------- |
 | App still uses in-memory data | All six `VITE_FIREBASE_*` variables set? Dev server restarted?                          |
-| Permission denied             | Firestore rules; project billing if using features that require it                      |
+| Permission denied             | Deploy `firestore.rules` / `storage.rules`; user must sign in; role claim set via CLI   |
+| 401 on server actions         | Sign in again; ensure Admin SDK env is set; do not use `VITE_ALLOW_DEMO_AUTH` in prod   |
+| Portal tickets 503            | `FIREBASE_SERVICE_ACCOUNT_PATH` or `FIREBASE_SERVICE_ACCOUNT_JSON` missing on server    |
 | Empty Assets list             | Seed the `assets` collection; confirm document fields match the `Asset` shape           |
 | Wrong or partial documents    | `id` in the document body should match the document id; use **Seed** to reset demo data |
 

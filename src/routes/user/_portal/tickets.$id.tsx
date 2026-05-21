@@ -4,9 +4,10 @@ import { format } from "date-fns";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { Card, PageHeader, StatusPill } from "@/components/ui-kit/Card";
 import { ticketStatusTone } from "@/lib/tickets/user-portal";
-import { callAuthenticatedServerFn } from "@/lib/auth/authenticated-server-fn";
+import { callEmployeePortalServerFn } from "@/lib/auth/authenticated-server-fn";
 import { USER_HOME_PATH } from "@/lib/auth/routing";
 import { getMyUserTicket } from "@/utils/tickets.functions";
+import { usePortalRequester } from "@/components/user/PortalRequesterProvider";
 
 export const Route = createFileRoute("/user/_portal/tickets/$id")({
   head: ({ params }) => ({ meta: [{ title: `Ticket ${params.id} — Asset Desk` }] }),
@@ -15,12 +16,31 @@ export const Route = createFileRoute("/user/_portal/tickets/$id")({
 
 function UserTicketDetailPage() {
   const { id } = Route.useParams();
+  const { email, name, hasIdentity } = usePortalRequester();
 
   const { data: ticket, isLoading, isError } = useQuery({
-    queryKey: ["my-user-ticket", id],
-    queryFn: () => callAuthenticatedServerFn(getMyUserTicket, { data: { id } }),
+    queryKey: ["my-user-ticket", id, email, name],
+    queryFn: () =>
+      callEmployeePortalServerFn(getMyUserTicket, {
+        data: { id, requesterEmail: email, requesterName: name || undefined },
+      }),
+    enabled: hasIdentity,
     refetchInterval: 30_000,
   });
+
+  if (!hasIdentity) {
+    return (
+      <div className="p-8 max-w-lg mx-auto">
+        <p className="text-sm text-muted-foreground">
+          Enter your work email on the{" "}
+          <Link to={USER_HOME_PATH} className="text-primary font-medium hover:underline">
+            portal home
+          </Link>{" "}
+          to view this ticket.
+        </p>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -59,6 +79,13 @@ function UserTicketDetailPage() {
           <StatusPill tone={ticketStatusTone(ticket.status)}>{ticket.status}</StatusPill>
           <StatusPill tone="info">{ticket.priority}</StatusPill>
         </div>
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          {ticket.status === "Open" && "Your request is in the queue. IT will pick it up soon."}
+          {ticket.status === "In Progress" && "IT is actively working on your request."}
+          {ticket.status === "Waiting Parts" && "Work is paused until parts or approvals arrive."}
+          {ticket.status === "Resolved" && "IT considers this issue fixed. It may be closed shortly."}
+          {ticket.status === "Closed" && "This request is complete. Open a new ticket if you need more help."}
+        </p>
         <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
           <div>
             <dt className="text-muted-foreground text-xs">Opened</dt>
@@ -79,6 +106,12 @@ function UserTicketDetailPage() {
               <dd className="text-muted-foreground">Not assigned yet</dd>
             </div>
           )}
+          {ticket.deskNumber ? (
+            <div>
+              <dt className="text-muted-foreground text-xs">Desk number</dt>
+              <dd className="font-medium">{ticket.deskNumber}</dd>
+            </div>
+          ) : null}
           {ticket.assetId ? (
             <div>
               <dt className="text-muted-foreground text-xs">Asset</dt>

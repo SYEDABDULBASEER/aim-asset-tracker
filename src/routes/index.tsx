@@ -1,61 +1,52 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
-import { LoginPortalChooser } from "@/components/auth/LoginPortalChooser";
-import { useAuth } from "@/lib/auth/AuthProvider";
-import { defaultPathForRole, LANDING_PATH } from "@/lib/auth/routing";
-import { isStaffRole } from "@/lib/auth/roles";
-import { firebaseAuthRequired } from "@/lib/firebase/env";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Boxes, LifeBuoy, LayoutDashboard } from "lucide-react";
+import { Card } from "@/components/ui-kit/Card";
+import { ADMIN_HOME_PATH, USER_HOME_PATH } from "@/lib/auth/routing";
 
 export const Route = createFileRoute("/")({
-  component: HomePage,
+  head: () => ({ meta: [{ title: "Asset Desk" }] }),
+  component: HomeChooserPage,
 });
 
-function HomePage() {
-  const auth = useAuth();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (auth.loading) return;
-    if (!firebaseAuthRequired()) return;
-    if (!auth.user) return;
-
-    const dest = defaultPathForRole(auth.role);
-    if (dest !== LANDING_PATH) {
-      void navigate({ to: dest, replace: true });
-    }
-  }, [auth.loading, auth.user, auth.role, navigate]);
-
-  if (auth.loading && firebaseAuthRequired()) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-sm text-muted-foreground">
-        Checking sign-in…
+function HomeChooserPage() {
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-muted/30 px-4 py-12">
+      <div className="text-center mb-10 max-w-md">
+        <div className="h-14 w-14 rounded-2xl bg-primary/15 flex items-center justify-center mx-auto mb-4">
+          <Boxes className="h-7 w-7 text-primary" />
+        </div>
+        <h1 className="text-2xl font-bold tracking-tight">Enterprise Asset Desk</h1>
+        <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
+          Choose how you want to use the application.
+        </p>
       </div>
-    );
-  }
 
-  if (firebaseAuthRequired() && auth.user && isStaffRole(auth.role)) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-sm text-muted-foreground">
-        Opening IT workspace…
+      <div className="grid gap-4 w-full max-w-lg sm:grid-cols-2">
+        <Link to={USER_HOME_PATH} preload="intent" className="block group">
+          <Card className="p-6 h-full border-primary/20 hover:border-primary/40 hover:shadow-md transition-all">
+            <LifeBuoy className="h-8 w-8 text-primary mb-3" />
+            <h2 className="text-base font-semibold group-hover:text-primary transition-colors">
+              Employee portal
+            </h2>
+            <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
+              Raise support tickets and track status with your work email — stored on this device
+              only. The IT workspace requires a separate provisioned account.
+            </p>
+          </Card>
+        </Link>
+        <Link to={ADMIN_HOME_PATH} preload="intent" className="block group">
+          <Card className="p-6 h-full hover:shadow-md transition-all">
+            <LayoutDashboard className="h-8 w-8 text-muted-foreground mb-3 group-hover:text-primary transition-colors" />
+            <h2 className="text-base font-semibold group-hover:text-primary transition-colors">
+              IT admin workspace
+            </h2>
+            <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
+              Manage assets, tickets, maintenance, and reports. Requires IT sign-in at{" "}
+              <span className="text-foreground font-medium">/login</span> (Firebase account).
+            </p>
+          </Card>
+        </Link>
       </div>
-    );
-  }
-
-  if (firebaseAuthRequired() && auth.user && auth.role === "user") {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-sm text-muted-foreground">
-        Opening employee portal…
-      </div>
-    );
-  }
-
-  if (!firebaseAuthRequired()) {
-    return <LoginPortalChooser />;
-  }
-
-  if (!auth.user) {
-    return <LoginPortalChooser />;
-  }
-
-  return null;
+    </div>
+  );
 }

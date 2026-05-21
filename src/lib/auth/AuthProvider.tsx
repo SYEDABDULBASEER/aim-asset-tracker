@@ -1,4 +1,10 @@
 import {
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signOut as firebaseSignOut,
+  type User,
+} from "firebase/auth";
+import {
   createContext,
   useCallback,
   useContext,
@@ -10,161 +16,124 @@ import {
 } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 
-import { onAuthStateChanged, signInWithEmailAndPassword, signOut, type User } from "firebase/auth";
-
-import { allowDemoAuthInDevelopment, firebaseAuthRequired, isFirebaseConfigured } from "@/lib/firebase/env";
-
+import { isFirebaseConfigured } from "@/lib/firebase/env";
 import { getFirebaseAuth } from "@/lib/firebase/init";
-import { getDevPersona } from "@/lib/auth/dev-persona";
-
-import {
-  installAuthenticatedServerFetch,
-  useAuthenticatedServerFetch,
-} from "@/lib/auth/server-fn-client";
-
-if (typeof window !== "undefined") {
-  installAuthenticatedServerFetch();
-}
-
+import { setAuthSessionUser } from "@/lib/auth/auth-session-ref";
+import { registerServerFnIdTokenProvider } from "@/lib/auth/auth-token-bridge";
+import { resolveItWorkspaceIdToken } from "@/lib/auth/resolve-it-id-token";
+import { staffWorkspaceAuthRequired } from "@/lib/auth/staff-workspace-auth";
 import { canWrite, normalizeAppRole, type AppRole } from "@/lib/auth/roles";
+import { clearPortalSession } from "@/lib/tickets/portal-session";
 
-type AuthContextValue = {
-  user: User | null;
+export type AuthContextValue = {
   loading: boolean;
   configured: boolean;
+  authRequired: boolean;
+  /** True after Firebase ID token is cached for the current user (safe to call server functions). */
+  sessionReady: boolean;
+  user: User | null;
   role: AppRole;
-  signIn: (email: string, password: string) => Promise<AppRole>;
+  signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
-  getIdToken: () => Promise<string | null>;
-  refreshRole: () => Promise<AppRole>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-/** Custom claims are not in the JWT until the token is refreshed after signup / setCustomUserClaims. */
-async function readRoleFromUser(
-  user: User | null,
-  options?: { forceRefresh?: boolean },
-): Promise<AppRole> {
-  if (!user) return "viewer";
-
-  if (options?.forceRefresh) {
-    await user.getIdToken(true);
-  }
-
-  let tokenResult = await user.getIdTokenResult();
-  if (tokenResult.claims.role === undefined) {
-    await user.getIdToken(true);
-    tokenResult = await user.getIdTokenResult();
-  }
-
-  return normalizeAppRole(tokenResult.claims.role);
-}
-
-function AuthSessionQuerySync() {
-  const auth = useAuth();
-  const queryClient = useQueryClient();
-  const lastUid = useRef<string | null>(null);
-
-  useEffect(() => {
-    if (auth.loading) return;
-    const uid = auth.user?.uid ?? null;
-    if (uid === lastUid.current) return;
-    lastUid.current = uid;
-    if (uid) void queryClient.invalidateQueries();
-  }, [auth.loading, auth.user?.uid, queryClient]);
-
-  return null;
-}
-
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const queryClient = useQueryClient();
   const configured = isFirebaseConfigured();
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(configured);
-  const [role, setRole] = useState<AppRole>("viewer");
+  const authRequired = staffWorkspaceAuthRequired();
+  const prevSessionUidRef = useRef<string | null>(null);
 
-  useAuthenticatedServerFetch();
+  const [user, setUser] = useState<User | null>(null);
+  const [claimRole, setClaimRole] = useState<AppRole>("viewer");
+  const [loading, setLoading] = useState(() => Boolean(configured));
+  const [sessionReady, setSessionReady] = useState(() => !authRequired);
 
   useEffect(() => {
     if (!configured) {
-      setRole("admin");
-      setLoading(false);
-      return;
-    }
-
-    if (allowDemoAuthInDevelopment()) {
+      setAuthSessionUser(null);
       setUser(null);
-      const persona = getDevPersona();
-      setRole(persona === "user" ? "user" : "admin");
+      setClaimRole("viewer");
+      setSessionReady(true);
       setLoading(false);
       return;
     }
 
     const auth = getFirebaseAuth();
-
-    return onAuthStateChanged(auth, async (nextUser) => {
+    const unsub = onAuthStateChanged(auth, async (nextUser) => {
+      setAuthSessionUser(nextUser);
+      if (nextUser) {
+        await nextUser.getIdToken(true);
+        const tokenResult = await nextUser.getIdTokenResult(true);
+        setClaimRole(normalizeAppRole(tokenResult.claims.role));
+        setSessionReady(true);
+      } else {
+        setClaimRole("viewer");
+        setSessionReady(false);
+      }
       setUser(nextUser);
-      setRole(await readRoleFromUser(nextUser));
       setLoading(false);
     });
+
+    return () => unsub();
   }, [configured]);
 
-  const refreshRole = useCallback(async () => {
-    const auth = getFirebaseAuth();
-    const current = auth.currentUser;
-    if (!current) {
-      setRole("viewer");
-      return "viewer";
-    }
-    await current.getIdToken(true);
-    const nextRole = await readRoleFromUser(current);
-    setRole(nextRole);
-    return nextRole;
+  useEffect(() => {
+    if (!sessionReady || !user) return;
+    const uid = user.uid;
+    if (prevSessionUidRef.current === uid) return;
+    prevSessionUidRef.current = uid;
+    void queryClient.invalidateQueries();
+  }, [sessionReady, user, queryClient]);
+
+  useEffect(() => {
+    registerServerFnIdTokenProvider(() => resolveItWorkspaceIdToken());
   }, []);
 
-  const signIn = useCallback(async (email: string, password: string) => {
-    const auth = getFirebaseAuth();
-    const credential = await signInWithEmailAndPassword(auth, email.trim(), password);
-    const nextRole = await readRoleFromUser(credential.user, { forceRefresh: true });
-    setUser(credential.user);
-    setRole(nextRole);
-    return nextRole;
-  }, []);
+  /** Effective role for UI: open access when auth is not enforced matches server OPEN_ACCESS. */
+  const role = useMemo<AppRole>(() => {
+    if (!configured || !authRequired) return "admin";
+    return claimRole;
+  }, [configured, authRequired, claimRole]);
 
-  const signOutUser = useCallback(async () => {
-    const auth = getFirebaseAuth();
-    await signOut(auth);
-    setUser(null);
-    setRole("viewer");
-  }, []);
+  const signIn = useCallback(
+    async (email: string, password: string) => {
+      if (!configured) throw new Error("Firebase is not configured.");
+      const auth = getFirebaseAuth();
+      await signInWithEmailAndPassword(auth, email.trim(), password);
+      const signedIn = auth.currentUser;
+      if (signedIn) {
+        setAuthSessionUser(signedIn);
+        await signedIn.getIdToken(true);
+        setSessionReady(true);
+      }
+    },
+    [configured],
+  );
 
-  const getIdToken = useCallback(async () => {
-    const auth = getFirebaseAuth();
-    const current = auth.currentUser;
-    if (!current) return null;
-    return current.getIdToken();
-  }, []);
+  const signOut = useCallback(async () => {
+    clearPortalSession();
+    setAuthSessionUser(null);
+    setSessionReady(false);
+    if (configured) await firebaseSignOut(getFirebaseAuth());
+  }, [configured]);
 
-  const value = useMemo(
+  const value = useMemo<AuthContextValue>(
     () => ({
-      user,
-      loading,
+      loading: Boolean(configured && loading),
       configured,
+      authRequired,
+      sessionReady,
+      user: configured ? user : null,
       role,
       signIn,
-      signOut: signOutUser,
-      getIdToken,
-      refreshRole,
+      signOut,
     }),
-    [user, loading, configured, role, signIn, signOutUser, getIdToken, refreshRole],
+    [configured, loading, authRequired, sessionReady, user, role, signIn, signOut],
   );
 
-  return (
-    <AuthContext.Provider value={value}>
-      <AuthSessionQuerySync />
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {
@@ -175,21 +144,25 @@ export function useAuth() {
   return context;
 }
 
-/** Wait for Firebase session before firing authenticated server function queries. */
 export function useAuthQueryEnabled(): boolean {
-  const auth = useAuth();
-  if (!firebaseAuthRequired()) return true;
-  return !auth.loading && Boolean(auth.user);
+  const ctx = useAuth();
+  if (!ctx.configured) return true;
+  if (!ctx.authRequired) return true;
+  return !ctx.loading && ctx.sessionReady && ctx.user !== null;
 }
 
 export function useIsAdmin(): boolean {
-  const { configured, role } = useAuth();
-  if (!configured) return true;
-  return role === "admin";
+  return useAuth().role === "admin";
 }
 
 export function useCanWriteAssets(): boolean {
-  const { configured, role } = useAuth();
-  if (!configured) return true;
+  const { role, authRequired, configured } = useAuth();
+  if (!configured || !authRequired) return true;
   return canWrite(role, "assets");
+}
+
+export function useCanWriteTickets(): boolean {
+  const { role, authRequired, configured } = useAuth();
+  if (!configured || !authRequired) return true;
+  return canWrite(role, "tickets");
 }
