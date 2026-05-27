@@ -258,10 +258,14 @@ function resolveEmployeePortalListQuery(data: {
   }
 
   if (isStaffRole(auth.role)) {
-    throw new AuthError(
-      "You are signed in to the IT workspace. Sign out first, or open the employee portal in a private window.",
-      403,
-    );
+    // Allow IT staff to view tickets they raise via the employee portal header
+    // (demo convenience). Access is still scoped by the portal form identity below.
+    const email = data.requesterEmail.trim().toLowerCase();
+    if (!email) throw new AuthError("Work email is required.", 400);
+    if (!isEmployeeWorkEmailAllowed(email)) {
+      throw new AuthError("Use your organization work email for this portal.", 403);
+    }
+    return { requesterEmail: email, requesterName: data.requesterName?.trim() || null };
   }
 
   if (isEndUserRole(auth.role) && auth.email?.trim()) {
@@ -353,10 +357,13 @@ export const createUserTicket = createServerFn({ method: "POST" })
           throw new Error("Use your organization work email for this portal.");
         }
       } else if (isStaffRole(auth.role)) {
-        throw new AuthError(
-          "Sign out of the IT workspace before submitting from the employee portal, or use a private window.",
-          403,
-        );
+        // Allow IT staff to submit via the employee portal header as well (e.g. during demos).
+        // The portal identity still comes from the form fields so tickets remain scoped.
+        email = data.requesterEmail?.trim().toLowerCase() ?? "";
+        if (!email) throw new Error("Work email is required so IT can contact you.");
+        if (!isEmployeeWorkEmailAllowed(email)) {
+          throw new Error("Use your organization work email for this portal.");
+        }
       } else if (isEndUserRole(auth.role) && auth.email?.trim()) {
         email = auth.email.trim().toLowerCase();
       } else {

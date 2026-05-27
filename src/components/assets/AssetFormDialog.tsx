@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { Asset, AssetCategory, AssetStatus } from "@/lib/models";
+import { DEPARTMENT_OPTIONS } from "@/lib/departments";
 
 const CATEGORY_OPTIONS: AssetCategory[] = [
   "Desktop",
@@ -30,6 +31,9 @@ const CATEGORY_OPTIONS: AssetCategory[] = [
 ];
 
 const STATUS_OPTIONS: AssetStatus[] = ["Active", "In Repair", "Available", "Lost", "Retired"];
+
+/** Radix Select forbids empty-string item values; map to form "" / null on save. */
+const DEPARTMENT_UNASSIGNED = "__unassigned__";
 
 export type AssetFormValues = {
   id: string;
@@ -162,11 +166,22 @@ export function AssetFormDialog({
             </div>
             <div className="grid gap-1.5">
               <Label htmlFor="asset-department">Department</Label>
-              <Input
-                id="asset-department"
-                value={values.department}
-                onChange={(e) => set({ department: e.target.value })}
-              />
+              <Select
+                value={values.department || DEPARTMENT_UNASSIGNED}
+                onValueChange={(v) => set({ department: v === DEPARTMENT_UNASSIGNED ? "" : v })}
+              >
+                <SelectTrigger id="asset-department">
+                  <SelectValue placeholder="Unassigned" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={DEPARTMENT_UNASSIGNED}>Unassigned</SelectItem>
+                  {DEPARTMENT_OPTIONS.map((option) => (
+                    <SelectItem key={option} value={option}>
+                      {option}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <div className="grid gap-1.5">
@@ -195,12 +210,12 @@ export function AssetFormDialog({
               />
             </div>
             <div className="grid gap-1.5">
-              <Label htmlFor="asset-location">Location</Label>
+              <Label htmlFor="asset-location">Desk no</Label>
               <Input
                 id="asset-location"
                 value={values.location}
                 onChange={(e) => set({ location: e.target.value })}
-                placeholder="Office, floor, or room"
+                placeholder="e.g. Desk-04"
               />
             </div>
           </div>

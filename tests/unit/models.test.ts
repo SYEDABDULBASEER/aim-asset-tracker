@@ -7,7 +7,7 @@ describe("models (Zod)", () => {
     name: "Laptop",
     category: "Laptop" as const,
     assignedTo: null,
-    department: "IT",
+    department: "operations",
     status: "Active" as const,
     warrantyUntil: null,
     lastServiceAt: null,

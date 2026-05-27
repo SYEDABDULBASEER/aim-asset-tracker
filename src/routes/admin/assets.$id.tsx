@@ -279,7 +279,7 @@ function AssetDetail() {
                 <Field label="Asset ID" value={asset?.id ?? "—"} />
                 <Field label="S No" value={asset?.serial ?? "—"} />
                 <Field label="Name" value={asset?.name ?? "—"} />
-                <Field label="Desk" value={asset?.location ?? "—"} />
+                <Field label="Desk no" value={asset?.location ?? "—"} />
                 <Field
                   label="Accessories & Softwares"
                   value={asset ? getAssetSpecificationLines(asset).join(" · ") || "—" : "—"}

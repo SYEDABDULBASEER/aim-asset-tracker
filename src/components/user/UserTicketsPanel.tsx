@@ -8,7 +8,7 @@ import { EmptyState } from "@/components/ui-kit/EmptyState";
 import { Button } from "@/components/ui/button";
 import { ticketStatusTone } from "@/lib/tickets/user-portal";
 import { ticketPriorityTone } from "@/lib/ui/status-tones";
-import { USER_REQUEST_SUPPORT_PATH } from "@/lib/auth/routing";
+import { USER_HOME_PATH } from "@/lib/auth/routing";
 import { callEmployeePortalServerFn } from "@/lib/auth/authenticated-server-fn";
 import { listMyUserTickets } from "@/utils/tickets.functions";
 import { usePortalRequester } from "@/components/user/PortalRequesterProvider";
@@ -90,7 +90,7 @@ export function UserTicketsPanel() {
           description={`No tickets found for ${email}. Submit a new request and it will appear here.`}
           action={
             <Button type="button" size="sm" asChild>
-              <Link to={USER_REQUEST_SUPPORT_PATH}>Report an issue</Link>
+              <Link to={USER_HOME_PATH}>Raise a ticket</Link>
             </Button>
           }
           className="py-8"

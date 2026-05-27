@@ -4,6 +4,7 @@ import { getWarrantyBand } from "@/lib/asset-warranty";
 import { requireRead } from "@/lib/auth/require-auth";
 import { loadAllAssets } from "./assets-source.server";
 import { loadAllTickets } from "./tickets-source.server";
+import { DEPARTMENT_OPTIONS } from "@/lib/departments";
 import type { Ticket } from "@/lib/models";
 
 type Tone = "success" | "warning" | "info" | "danger" | "muted";
@@ -56,6 +57,8 @@ export type DashboardSummary = {
   };
   byCategory: Array<{ name: string; value: number }>;
   byDepartment: Array<{ name: string; value: number }>;
+  /** Desktop assets split by department (randomized for visual demo). */
+  byDesktopDepartment: Array<{ name: string; value: number }>;
   alerts: DashboardAlert[];
   recommendedActions: DashboardAlert[];
   recentActivity: Array<{
@@ -124,6 +127,18 @@ export const getDashboardSummary = createServerFn({ method: "GET" }).handler(asy
   ]);
 
   const now = new Date();
+
+  // Small deterministic PRNG so the “randomized” chart stays stable across refetches
+  // (but still changes if the underlying dataset changes).
+  function mulberry32(seed: number) {
+    return function () {
+      let t = (seed += 0x6d2b79f5);
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
   const totals = {
     totalAssets: assets.length,
     activeAssets: assets.filter((a) => a.status === "Active").length,
@@ -152,6 +167,34 @@ export const getDashboardSummary = createServerFn({ method: "GET" }).handler(asy
   const byDepartment = Array.from(byDeptMap.entries())
     .map(([name, value]) => ({ name, value }))
     .sort((a, b) => b.value - a.value);
+
+  const desktopAssets = assets.filter((a) => a.category === "Desktop");
+  const totalDesktopAssets = desktopAssets.length;
+  const seed = assets.reduce((acc, a) => {
+    const id0 = a.id.charCodeAt(0) ?? 0;
+    const deptLen = a.department?.length ?? 0;
+    return acc + id0 + deptLen * 7 + a.category.length * 13;
+  }, 0);
+  const rng = mulberry32(seed + totalDesktopAssets * 101);
+
+  // Generate random department-wise split for *desktop* category only.
+  const desktopDeptWeights = DEPARTMENT_OPTIONS.map(() => 0.2 + rng());
+  const weightSum = desktopDeptWeights.reduce((s, w) => s + w, 0) || 1;
+  const raw = desktopDeptWeights.map((w) => (totalDesktopAssets * w) / weightSum);
+  const floors = raw.map((v) => Math.floor(v));
+  let remainder = totalDesktopAssets - floors.reduce((s, n) => s + n, 0);
+  const fractions = raw
+    .map((v, i) => ({ i, frac: v - floors[i]! }))
+    .sort((a, b) => b.frac - a.frac);
+  while (remainder > 0) {
+    const idx = fractions[remainder % fractions.length]?.i ?? 0;
+    floors[idx] += 1;
+    remainder -= 1;
+  }
+  const byDesktopDepartment = DEPARTMENT_OPTIONS.map((name, i) => ({
+    name,
+    value: floors[i]!,
+  })).sort((a, b) => b.value - a.value);
 
   const openTickets = tickets.filter((t) => t.status !== "Closed").length;
   const slaBreached = tickets.filter(
@@ -296,6 +339,7 @@ export const getDashboardSummary = createServerFn({ method: "GET" }).handler(asy
     },
     byCategory,
     byDepartment,
+    byDesktopDepartment,
     alerts: alerts.sort((a, b) => toneRank(b.tone) - toneRank(a.tone)),
     recommendedActions,
     recentActivity,

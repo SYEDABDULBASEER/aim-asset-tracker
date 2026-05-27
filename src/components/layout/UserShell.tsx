@@ -1,13 +1,10 @@
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
-import { Home, LifeBuoy } from "lucide-react";
+import { Home } from "lucide-react";
 import { AppLogo } from "@/components/brand/AppLogo";
-import { USER_HOME_PATH, USER_REQUEST_SUPPORT_PATH } from "@/lib/auth/routing";
+import { USER_HOME_PATH } from "@/lib/auth/routing";
 import { usePortalRequester } from "@/components/user/PortalRequesterProvider";
 
-const navItems = [
-  { title: "My portal", to: USER_HOME_PATH, icon: Home },
-  { title: "New ticket", to: USER_REQUEST_SUPPORT_PATH, icon: LifeBuoy },
-] as const;
+const navItems = [{ title: "My portal", to: USER_HOME_PATH, icon: Home }] as const;
 
 export function UserShell() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });

@@ -26,7 +26,8 @@ function parseAssetInput(data: z.infer<typeof AssetCreateSchema>) {
     ...data,
     id: data.id.trim(),
     assignedTo: data.assignedTo ?? null,
-    department: data.department ?? null,
+    // Treat empty-string department (common in CSV) as null/Unassigned.
+    department: data.department && data.department.trim() ? data.department.trim() : null,
     warrantyUntil: data.warrantyUntil ?? null,
     lastServiceAt: data.lastServiceAt ?? null,
     serial: data.serial ?? null,

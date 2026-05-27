@@ -241,14 +241,15 @@ export function Topbar() {
           {auth.authRequired && auth.user ? (
             <Button
               type="button"
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 shrink-0"
-              title="Sign out"
-              aria-label="Sign out"
+              variant="default"
+              size="sm"
+              className="h-8 shrink-0 rounded-full px-3 shadow-sm hover:shadow transition-shadow"
+              title="Logout"
+              aria-label="Logout"
               onClick={() => void auth.signOut()}
             >
               <LogOut className="h-4 w-4" />
+              <span className="hidden sm:inline">Logout</span>
             </Button>
           ) : null}
         </div>

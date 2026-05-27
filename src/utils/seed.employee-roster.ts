@@ -79,7 +79,7 @@ export function pcNoToAssetId(pcNo: string): string | null {
 export function buildRosterExtraAssets(): Asset[] {
   const template = {
     category: "Desktop" as const,
-    department: "IT" as const,
+    department: "operations" as const,
     status: "Active" as const,
     warrantyUntil: null,
     lastServiceAt: null,

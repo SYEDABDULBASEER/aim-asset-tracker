@@ -42,7 +42,7 @@ def main() -> None:
                 f"      name: {json.dumps(display)},",
                 f'      category: "{category}",',
                 "      assignedTo: null,",
-                '      department: "IT",',
+                '      department: "operations",',
                 '      status: "Active",',
             ]
         )

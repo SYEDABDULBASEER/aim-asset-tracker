@@ -41,6 +41,7 @@ import {
   useIsAdmin,
 } from "@/lib/auth/AuthProvider";
 import type { Asset, AssetCategory, AssetStatus, WarrantyBand } from "@/lib/models";
+import { DEPARTMENT_OPTIONS, type Department } from "@/lib/departments";
 import {
   AssetFormDialog,
   assetToFormValues,
@@ -67,18 +68,6 @@ const CATEGORY_OPTIONS: AssetCategory[] = [
   "Mobile",
   "Network",
 ];
-
-const DEPARTMENT_OPTIONS = [
-  "IT",
-  "Design",
-  "Sales",
-  "Marketing",
-  "HR",
-  "Operations",
-  "Finance",
-  "Stock",
-  "Shared",
-] as const;
 
 const STATUS_OPTIONS: AssetStatus[] = ["Active", "In Repair", "Available", "Lost", "Retired"];
 
@@ -195,7 +184,7 @@ function AssetsPage() {
   const [page, setPage] = useState(0);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [category, setCategory] = useState<AssetCategory | "">("");
-  const [department, setDepartment] = useState<(typeof DEPARTMENT_OPTIONS)[number] | "">("");
+  const [department, setDepartment] = useState<Department | "">("");
   const [status, setStatus] = useState<AssetStatus | "">("");
   const [warrantyBand, setWarrantyBand] = useState<WarrantyBand | "">("");
   const [createOpen, setCreateOpen] = useState(false);
@@ -498,10 +487,10 @@ function AssetsPage() {
               setPage(0);
             }}
           />
-          <FilterPopover<(typeof DEPARTMENT_OPTIONS)[number]>
+          <FilterPopover<Department>
             label="Department"
             value={department}
-            options={[...DEPARTMENT_OPTIONS]}
+            options={DEPARTMENT_OPTIONS}
             displayValue={(v) => v}
             onChange={(v) => {
               setDepartment(v);
@@ -621,7 +610,7 @@ function AssetsPage() {
                     Assigned to
                   </th>
                   <th className="text-left font-medium px-4 py-3 hidden lg:table-cell">S No</th>
-                  <th className="text-left font-medium px-4 py-3 hidden lg:table-cell">Desk</th>
+                  <th className="text-left font-medium px-4 py-3 hidden lg:table-cell">Desk no</th>
                   <th className="px-4 py-3" />
                 </tr>
               </thead>

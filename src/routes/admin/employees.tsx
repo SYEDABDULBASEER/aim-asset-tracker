@@ -15,6 +15,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -35,6 +42,7 @@ import { AuthStatusBanner } from "@/components/auth/AuthStatusBanner";
 import { ReadOnlyRoleBanner } from "@/components/auth/ReadOnlyRoleBanner";
 import { formatListQueryError } from "@/lib/auth/list-query-error";
 import { destructiveAlertActionClass, destructiveIconButtonClass } from "@/lib/ui/button-hierarchy";
+import { DEPARTMENT_OPTIONS } from "@/lib/departments";
 import {
   createEmployee,
   deleteEmployee,
@@ -56,7 +64,7 @@ type EmployeeFormValues = {
 };
 
 function emptyEmployeeForm(): EmployeeFormValues {
-  return { id: "", name: "", role: "", department: "", email: "" };
+  return { id: "", name: "", role: "", department: "operations", email: "" };
 }
 
 function employeeToForm(employee: Employee): EmployeeFormValues {
@@ -319,13 +327,21 @@ function Employees() {
             </div>
             <div className="grid gap-1.5">
               <Label htmlFor="employee-department">Department</Label>
-              <Input
-                id="employee-department"
+              <Select
                 value={formValues.department}
-                onChange={(event) =>
-                  setFormValues((current) => ({ ...current, department: event.target.value }))
-                }
-              />
+                onValueChange={(v) => setFormValues((current) => ({ ...current, department: v }))}
+              >
+                <SelectTrigger id="employee-department">
+                  <SelectValue placeholder="Select department" />
+                </SelectTrigger>
+                <SelectContent>
+                  {DEPARTMENT_OPTIONS.map((option) => (
+                    <SelectItem key={option} value={option}>
+                      {option}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="grid gap-1.5">
               <Label htmlFor="employee-email">Email</Label>

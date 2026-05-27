@@ -37,7 +37,7 @@ export function PortalIdentityCard() {
               ) : null}
               <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">
                 Tickets raised with this work email appear below. This portal does not use your IT
-                Firebase account at /login.
+                account at /login.
               </p>
             </div>
           </div>
@@ -65,7 +65,7 @@ export function PortalIdentityCard() {
           <h2 className="text-sm font-semibold">Your work email</h2>
           <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
             Enter the email you use at work so we can show only your support requests. It is saved
-            in this browser only — not a Firebase employee account.
+            in this browser only — not an IT employee login.
           </p>
           <p className="text-[11px] text-amber-700/90 dark:text-amber-400/90 mt-1.5 leading-relaxed">
             IT staff sign-in at /login is separate. Your portal identity stays on this device until
