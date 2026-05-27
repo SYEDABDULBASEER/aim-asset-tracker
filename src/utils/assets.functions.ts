@@ -205,7 +205,9 @@ export const exportAssetsCsv = createServerFn({ method: "GET" }).handler(async (
   ];
   const lines = [
     header.join(","),
-    ...all.map((a) => header.map((key) => csvEscape(String(a[key as keyof typeof a] ?? ""))).join(",")),
+    ...all.map((a) =>
+      header.map((key) => csvEscape(String(a[key as keyof typeof a] ?? ""))).join(","),
+    ),
   ];
   return { csv: lines.join("\n"), filename: "assets-export.csv" };
 });

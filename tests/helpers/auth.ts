@@ -1,7 +1,9 @@
 import type { AppRole } from "@/lib/auth/roles";
 import { runWithRequestContext, type ServerAuthContext } from "@/lib/auth/request-context";
 
-export function testAuth(overrides: Partial<ServerAuthContext> & { role: AppRole }): ServerAuthContext {
+export function testAuth(
+  overrides: Partial<ServerAuthContext> & { role: AppRole },
+): ServerAuthContext {
   return {
     uid: overrides.uid ?? "test-uid",
     email: overrides.email ?? "test@example.com",

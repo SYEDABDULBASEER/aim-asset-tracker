@@ -171,10 +171,7 @@ export function AssetFormDialog({
           </div>
           <div className="grid gap-1.5">
             <Label>Status</Label>
-            <Select
-              value={values.status}
-              onValueChange={(v) => set({ status: v as AssetStatus })}
-            >
+            <Select value={values.status} onValueChange={(v) => set({ status: v as AssetStatus })}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>

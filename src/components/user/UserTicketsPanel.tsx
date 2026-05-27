@@ -55,7 +55,8 @@ export function UserTicketsPanel() {
           <div>
             <h2 className="text-sm font-bold text-foreground">My support requests</h2>
             <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-              Status updates for tickets submitted with <span className="font-medium">{email}</span>.
+              Status updates for tickets submitted with <span className="font-medium">{email}</span>
+              .
             </p>
           </div>
         </div>
@@ -69,11 +70,7 @@ export function UserTicketsPanel() {
           aria-label={isFetching ? "Refreshing tickets" : "Refresh ticket list"}
           onClick={() => void refetch()}
         >
-          {isFetching ? (
-            <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
-          ) : (
-            "Refresh"
-          )}
+          {isFetching ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden /> : "Refresh"}
         </Button>
       </div>
 
@@ -129,7 +126,9 @@ export function UserTicketsPanel() {
                   <div className="flex items-center gap-2 mt-1.5 text-[11px] text-muted-foreground font-mono">
                     <span className="font-bold text-muted-foreground/90 uppercase">{t.id}</span>
                     <span>•</span>
-                    <span>updated {formatDistanceToNow(new Date(t.updatedAt), { addSuffix: true })}</span>
+                    <span>
+                      updated {formatDistanceToNow(new Date(t.updatedAt), { addSuffix: true })}
+                    </span>
                   </div>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">

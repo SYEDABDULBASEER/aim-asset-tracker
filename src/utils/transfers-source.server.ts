@@ -1,5 +1,8 @@
 import { isFirebaseAdminConfigured } from "@/lib/firebase/admin";
-import { shouldUseInMemoryStore, requireProductionPersistence } from "@/lib/firebase/production-persistence";
+import {
+  shouldUseInMemoryStore,
+  requireProductionPersistence,
+} from "@/lib/firebase/production-persistence";
 import type { Transfer } from "@/lib/models";
 import {
   firestoreListAllTransfers,

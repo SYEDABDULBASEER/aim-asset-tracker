@@ -5,9 +5,7 @@ import { EmptyState } from "@/components/ui-kit/EmptyState";
 
 describe("EmptyState", () => {
   it("renders title and description", () => {
-    render(
-      <EmptyState title="No assets" description="Add your first asset to get started." />,
-    );
+    render(<EmptyState title="No assets" description="Add your first asset to get started." />);
     expect(screen.getByText("No assets")).toBeInTheDocument();
     expect(screen.getByText(/first asset/)).toBeInTheDocument();
   });

@@ -203,53 +203,51 @@ function Settings() {
       </Card>
 
       <TableCard scrollLabel="Audit log entries">
-          <div className="px-6 py-4 border-b border-border">
-            <h3 className="text-sm font-semibold">Audit logs</h3>
-            <p className="text-xs text-muted-foreground mt-1">
-              Recent actions across the workspace.
-            </p>
-          </div>
-          {auditLoading ? (
-            <ListPageSkeleton rows={5} columns={4} className="border-0 shadow-none rounded-none" />
-          ) : auditError ? (
-            <AuthStatusBanner
-              error={formatListQueryError(auditErrorDetail)}
-              onRetry={() => void refetchAudit()}
-              onSignOut={auth.user ? () => void auth.signOut() : undefined}
-            />
-          ) : auditEntries.length === 0 ? (
-            <EmptyState
-              title="No audit entries yet"
-              description="Workspace actions will appear here after assets, tickets, or settings change."
-            />
-          ) : (
-            <table className="w-full text-sm">
-              <thead className="bg-muted/50">
-                <tr className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                  <th className="text-left font-medium px-4 py-3">When</th>
-                  <th className="text-left font-medium px-4 py-3">Action</th>
-                  <th className="text-left font-medium px-4 py-3">Entity</th>
-                  <th className="text-left font-medium px-4 py-3">Actor</th>
+        <div className="px-6 py-4 border-b border-border">
+          <h3 className="text-sm font-semibold">Audit logs</h3>
+          <p className="text-xs text-muted-foreground mt-1">Recent actions across the workspace.</p>
+        </div>
+        {auditLoading ? (
+          <ListPageSkeleton rows={5} columns={4} className="border-0 shadow-none rounded-none" />
+        ) : auditError ? (
+          <AuthStatusBanner
+            error={formatListQueryError(auditErrorDetail)}
+            onRetry={() => void refetchAudit()}
+            onSignOut={auth.user ? () => void auth.signOut() : undefined}
+          />
+        ) : auditEntries.length === 0 ? (
+          <EmptyState
+            title="No audit entries yet"
+            description="Workspace actions will appear here after assets, tickets, or settings change."
+          />
+        ) : (
+          <table className="w-full text-sm">
+            <thead className="bg-muted/50">
+              <tr className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                <th className="text-left font-medium px-4 py-3">When</th>
+                <th className="text-left font-medium px-4 py-3">Action</th>
+                <th className="text-left font-medium px-4 py-3">Entity</th>
+                <th className="text-left font-medium px-4 py-3">Actor</th>
+              </tr>
+            </thead>
+            <tbody>
+              {auditEntries.map((entry) => (
+                <tr key={entry.id} className="border-t border-border">
+                  <td className="px-4 py-3 text-muted-foreground">
+                    {format(new Date(entry.createdAt), "dd MMM yyyy HH:mm")}
+                  </td>
+                  <td className="px-4 py-3">{entry.action}</td>
+                  <td className="px-4 py-3 text-muted-foreground">
+                    {entry.entityType} · {entry.entityId}
+                  </td>
+                  <td className="px-4 py-3 text-muted-foreground">
+                    {entry.actorEmail ?? entry.actorUid}
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {auditEntries.map((entry) => (
-                  <tr key={entry.id} className="border-t border-border">
-                    <td className="px-4 py-3 text-muted-foreground">
-                      {format(new Date(entry.createdAt), "dd MMM yyyy HH:mm")}
-                    </td>
-                    <td className="px-4 py-3">{entry.action}</td>
-                    <td className="px-4 py-3 text-muted-foreground">
-                      {entry.entityType} · {entry.entityId}
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground">
-                      {entry.actorEmail ?? entry.actorUid}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
+              ))}
+            </tbody>
+          </table>
+        )}
       </TableCard>
     </PageShell>
   );

@@ -169,73 +169,73 @@ export function RaiseTicketForm({ onSubmitted, showIdentityFields = true }: Rais
           <legend className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 w-full">
             {showIdentityFields ? "Step 2 — Issue" : "Step 1 — Issue"}
           </legend>
-        <div className="space-y-2">
-          <Label htmlFor="rs-title">Short summary</Label>
-          <Input
-            id="rs-title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="What is going wrong?"
-            required
-            minLength={5}
-            maxLength={500}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="rs-desc">Details</Label>
-          <Textarea
-            id="rs-desc"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="What happened, when, and any error messages or asset tag if you know it."
-            required
-            minLength={10}
-            rows={5}
-            className="resize-y min-h-[120px]"
-          />
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label>Priority</Label>
-            <Select value={priority} onValueChange={(v) => setPriority(v as TicketPriority)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {PRIORITIES.map((p) => (
-                  <SelectItem key={p} value={p}>
-                    {p}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="rs-asset">Asset ID (optional)</Label>
+            <Label htmlFor="rs-title">Short summary</Label>
             <Input
-              id="rs-asset"
-              value={assetId}
-              onChange={(e) => setAssetId(e.target.value)}
-              placeholder="e.g. LAP-0001"
+              id="rs-title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="What is going wrong?"
+              required
+              minLength={5}
+              maxLength={500}
             />
           </div>
-        </div>
+          <div className="space-y-2">
+            <Label htmlFor="rs-desc">Details</Label>
+            <Textarea
+              id="rs-desc"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="What happened, when, and any error messages or asset tag if you know it."
+              required
+              minLength={10}
+              rows={5}
+              className="resize-y min-h-[120px]"
+            />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Priority</Label>
+              <Select value={priority} onValueChange={(v) => setPriority(v as TicketPriority)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {PRIORITIES.map((p) => (
+                    <SelectItem key={p} value={p}>
+                      {p}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="rs-asset">Asset ID (optional)</Label>
+              <Input
+                id="rs-asset"
+                value={assetId}
+                onChange={(e) => setAssetId(e.target.value)}
+                placeholder="e.g. LAP-0001"
+              />
+            </div>
+          </div>
         </fieldset>
 
         <fieldset className="border-0 p-0 m-0 min-w-0">
           <legend className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3 w-full">
             {showIdentityFields ? "Step 3 — Submit" : "Step 2 — Submit"}
           </legend>
-        <Button type="submit" className="w-full" disabled={submitMut.isPending}>
-          {submitMut.isPending ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-              Submitting…
-            </>
-          ) : (
-            "Submit ticket"
-          )}
-        </Button>
+          <Button type="submit" className="w-full" disabled={submitMut.isPending}>
+            {submitMut.isPending ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                Submitting…
+              </>
+            ) : (
+              "Submit ticket"
+            )}
+          </Button>
         </fieldset>
       </form>
     </Card>

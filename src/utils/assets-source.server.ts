@@ -1,10 +1,10 @@
 import type { Asset } from "@/lib/models";
 import { isFirebaseAdminConfigured } from "@/lib/firebase/admin";
+import { firestoreListAllAssets, firestoreSyncAssetsExact } from "@/lib/firebase/assets.firestore";
 import {
-  firestoreListAllAssets,
-  firestoreSyncAssetsExact,
-} from "@/lib/firebase/assets.firestore";
-import { shouldUseInMemoryStore, requireProductionPersistence } from "@/lib/firebase/production-persistence";
+  shouldUseInMemoryStore,
+  requireProductionPersistence,
+} from "@/lib/firebase/production-persistence";
 import { buildSeedAssets } from "./seed.assets";
 import { getStore, replaceStoreAssetsWithSeed } from "./store.server";
 

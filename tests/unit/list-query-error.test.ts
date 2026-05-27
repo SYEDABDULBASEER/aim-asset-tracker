@@ -27,9 +27,7 @@ describe("list-query-error", () => {
   });
 
   it("formats assets enum migration message", () => {
-    const msg = formatAssetsQueryError(
-      new Error('invalid_enum_value: "Servers"'),
-    );
+    const msg = formatAssetsQueryError(new Error('invalid_enum_value: "Servers"'));
     expect(msg).toContain("Servers");
     expect(msg).toContain("Desktop");
   });

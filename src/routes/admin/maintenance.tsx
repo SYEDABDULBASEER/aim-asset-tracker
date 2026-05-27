@@ -184,101 +184,107 @@ function Maintenance() {
         <AssetContextBanner
           assetId={searchAssetId}
           assetLabel={assetMap.get(searchAssetId)}
-          onClear={() => void navigate({ to: "/admin/maintenance", search: { assetId: undefined } })}
+          onClear={() =>
+            void navigate({ to: "/admin/maintenance", search: { assetId: undefined } })
+          }
         />
       ) : null}
 
       {isLoading ? (
         <ListPageSkeleton rows={6} columns={7} />
       ) : (
-      <TableCard scrollLabel="Maintenance jobs">
-        {isError ? (
-          <AuthStatusBanner
-            error={formatListQueryError(error)}
-            onRetry={() => void refetch()}
-            onSignOut={auth.user ? () => void auth.signOut() : undefined}
-          />
-        ) : null}
-        {!isError && rows.length === 0 ? (
-          <EmptyState
-            icon={Wrench}
-            title="No maintenance jobs"
-            description={
-              searchAssetId
-                ? "No scheduled or completed work for this asset yet."
-                : "Schedule preventive or repair work with your vendor partners."
-            }
-            action={
-              <Button type="button" className="h-9 shadow-soft" onClick={() => setCreateOpen(true)}>
-                <Plus className="h-4 w-4" />
-                Schedule job
-              </Button>
-            }
-          />
-        ) : (
-        <table className="w-full text-sm">
-          <thead className="bg-muted/50">
-            <tr className="text-[11px] uppercase tracking-wider text-muted-foreground">
-              {["Job", "Asset", "Type", "Vendor", "Date", "Status", "Actions"].map((header) => (
-                <th key={header} className="text-left font-medium px-4 py-3">
-                  {header}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr key={row.id} className="border-t border-border hover:bg-muted/30">
-                <td className="px-4 py-3 font-mono text-xs">{row.id}</td>
-                <td className="px-4 py-3 font-medium">
-                  <Link
-                    to="/admin/assets/$id"
-                    params={{ id: row.assetId }}
-                    search={{ q: undefined }}
-                    className="text-primary hover:underline"
-                  >
-                    {row.assetId}
-                  </Link>
-                  {assetMap.get(row.assetId) ? ` · ${assetMap.get(row.assetId)}` : ""}
-                </td>
-                <td className="px-4 py-3 text-muted-foreground">{row.type}</td>
-                <td className="px-4 py-3">{row.vendor}</td>
-                <td className="px-4 py-3 text-muted-foreground inline-flex items-center gap-1.5">
-                  <Calendar className="h-3.5 w-3.5" />
-                  {format(new Date(row.scheduledAt), "dd MMM yyyy")}
-                </td>
-                <td className="px-4 py-3">
-                  <StatusPill tone={maintenanceStatusTone(row.status)}>{row.status}</StatusPill>
-                </td>
-                <td className="px-4 py-3">
-                  {row.status === "Scheduled" ? (
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      onClick={() => statusMut.mutate({ id: row.id, status: "In Progress" })}
-                    >
-                      Start
-                    </Button>
-                  ) : row.status === "In Progress" ? (
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      onClick={() => statusMut.mutate({ id: row.id, status: "Completed" })}
-                    >
-                      Complete
-                    </Button>
-                  ) : (
-                    <span className="text-xs text-muted-foreground">—</span>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        )}
-      </TableCard>
+        <TableCard scrollLabel="Maintenance jobs">
+          {isError ? (
+            <AuthStatusBanner
+              error={formatListQueryError(error)}
+              onRetry={() => void refetch()}
+              onSignOut={auth.user ? () => void auth.signOut() : undefined}
+            />
+          ) : null}
+          {!isError && rows.length === 0 ? (
+            <EmptyState
+              icon={Wrench}
+              title="No maintenance jobs"
+              description={
+                searchAssetId
+                  ? "No scheduled or completed work for this asset yet."
+                  : "Schedule preventive or repair work with your vendor partners."
+              }
+              action={
+                <Button
+                  type="button"
+                  className="h-9 shadow-soft"
+                  onClick={() => setCreateOpen(true)}
+                >
+                  <Plus className="h-4 w-4" />
+                  Schedule job
+                </Button>
+              }
+            />
+          ) : (
+            <table className="w-full text-sm">
+              <thead className="bg-muted/50">
+                <tr className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                  {["Job", "Asset", "Type", "Vendor", "Date", "Status", "Actions"].map((header) => (
+                    <th key={header} className="text-left font-medium px-4 py-3">
+                      {header}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row) => (
+                  <tr key={row.id} className="border-t border-border hover:bg-muted/30">
+                    <td className="px-4 py-3 font-mono text-xs">{row.id}</td>
+                    <td className="px-4 py-3 font-medium">
+                      <Link
+                        to="/admin/assets/$id"
+                        params={{ id: row.assetId }}
+                        search={{ q: undefined }}
+                        className="text-primary hover:underline"
+                      >
+                        {row.assetId}
+                      </Link>
+                      {assetMap.get(row.assetId) ? ` · ${assetMap.get(row.assetId)}` : ""}
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">{row.type}</td>
+                    <td className="px-4 py-3">{row.vendor}</td>
+                    <td className="px-4 py-3 text-muted-foreground inline-flex items-center gap-1.5">
+                      <Calendar className="h-3.5 w-3.5" />
+                      {format(new Date(row.scheduledAt), "dd MMM yyyy")}
+                    </td>
+                    <td className="px-4 py-3">
+                      <StatusPill tone={maintenanceStatusTone(row.status)}>{row.status}</StatusPill>
+                    </td>
+                    <td className="px-4 py-3">
+                      {row.status === "Scheduled" ? (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => statusMut.mutate({ id: row.id, status: "In Progress" })}
+                        >
+                          Start
+                        </Button>
+                      ) : row.status === "In Progress" ? (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => statusMut.mutate({ id: row.id, status: "Completed" })}
+                        >
+                          Complete
+                        </Button>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </TableCard>
       )}
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>

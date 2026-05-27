@@ -25,20 +25,35 @@ const OPEN_ACCESS_AUTH: ServerAuthContext = {
  */
 const REQUEST_AUTH_SYMBOL = Symbol.for("assetdesk.requestVerifiedAuth");
 
+type RequestWithVerifiedAuth = Request & {
+  [REQUEST_AUTH_SYMBOL]?: ServerAuthContext;
+};
+
+const TANSTACK_STORAGE_KEY = Symbol.for("tanstack-start:start-storage-context");
+
+type TanStackStartStore = { request?: Request };
+type TanStackStartStorage = {
+  getStore: () => TanStackStartStore | undefined;
+};
+
+type TanStackStartGlobal = typeof globalThis & {
+  [TANSTACK_STORAGE_KEY]?: TanStackStartStorage;
+};
+
 /**
  * Attach verified auth to a request object so it can be read later
  * by server function handlers even when AsyncLocalStorage context
  * doesn't propagate across Vite SSR module boundaries.
  */
 export function attachAuthToRequest(request: Request, auth: ServerAuthContext): void {
-  (request as any)[REQUEST_AUTH_SYMBOL] = auth;
+  (request as RequestWithVerifiedAuth)[REQUEST_AUTH_SYMBOL] = auth;
 }
 
 /**
  * Read verified auth previously stamped on a request object.
  */
 function getAuthFromRequest(request: Request): ServerAuthContext | null {
-  return (request as any)[REQUEST_AUTH_SYMBOL] ?? null;
+  return (request as RequestWithVerifiedAuth)[REQUEST_AUTH_SYMBOL] ?? null;
 }
 
 /**
@@ -54,8 +69,7 @@ function getAuthFromRequest(request: Request): ServerAuthContext | null {
  */
 function getCurrentRequest(): Request | null {
   try {
-    const TANSTACK_STORAGE_KEY = Symbol.for("tanstack-start:start-storage-context");
-    const storage = (globalThis as any)[TANSTACK_STORAGE_KEY];
+    const storage = (globalThis as TanStackStartGlobal)[TANSTACK_STORAGE_KEY];
     if (!storage || typeof storage.getStore !== "function") return null;
     const store = storage.getStore();
     return store?.request ?? null;

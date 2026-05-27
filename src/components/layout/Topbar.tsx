@@ -231,7 +231,10 @@ export function Topbar() {
           </div>
           <div className="hidden sm:block text-left leading-tight min-w-0 flex-1">
             <AppBrandName className="text-xs font-medium truncate block" />
-            <div className="text-[10px] text-muted-foreground truncate" title={sessionSubtitle(auth)}>
+            <div
+              className="text-[10px] text-muted-foreground truncate"
+              title={sessionSubtitle(auth)}
+            >
               {sessionSubtitle(auth)}
             </div>
           </div>

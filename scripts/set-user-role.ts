@@ -70,7 +70,9 @@ if (!email || !roleArg || !APP_ROLES.includes(roleArg)) {
     const auth = getAdminAuth();
     const user = await auth.getUserByEmail(email);
     await auth.setCustomUserClaims(user.uid, { role: roleArg });
-    console.log(`Assigned role "${roleArg}" to ${email}. Ask the user to sign out and sign in again.`);
+    console.log(
+      `Assigned role "${roleArg}" to ${email}. Ask the user to sign out and sign in again.`,
+    );
   } catch (error) {
     const message = error instanceof Error ? error.message : "Failed to assign role.";
     console.error(message);

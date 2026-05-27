@@ -324,7 +324,10 @@ function Dashboard() {
               <h2 className="text-sm font-semibold text-foreground">User-submitted requests</h2>
               <p className="text-xs text-muted-foreground mt-1 max-w-2xl">
                 These tickets were opened from the public{" "}
-                <Link to="/user/request-support" className="text-primary font-medium hover:underline">
+                <Link
+                  to="/user/request-support"
+                  className="text-primary font-medium hover:underline"
+                >
                   Report an issue
                 </Link>{" "}
                 page and are still <span className="font-medium">Open</span>.
@@ -365,7 +368,11 @@ function Dashboard() {
               <span
                 className={`inline-flex items-center gap-0.5 text-[11px] font-medium ${k.up ? "text-success" : "text-destructive"}`}
               >
-                {k.up ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
+                {k.up ? (
+                  <ArrowUpRight className="h-3 w-3" />
+                ) : (
+                  <ArrowDownRight className="h-3 w-3" />
+                )}
                 {k.delta}
               </span>
             }

@@ -1,7 +1,11 @@
 import { createStart, createMiddleware } from "@tanstack/react-start";
 
 import { renderErrorPage } from "./lib/error-page";
-import { EMPLOYEE_PORTAL_FN_HEADER, EMPLOYEE_PORTAL_FN_HEADER_VALUE, PORTAL_GUEST_SERVER_AUTH } from "./lib/auth/employee-portal";
+import {
+  EMPLOYEE_PORTAL_FN_HEADER,
+  EMPLOYEE_PORTAL_FN_HEADER_VALUE,
+  PORTAL_GUEST_SERVER_AUTH,
+} from "./lib/auth/employee-portal";
 import { runWithRequestContext, type ServerAuthContext } from "./lib/auth/request-context";
 import { attachAuthToRequest } from "./lib/auth/require-auth";
 import { injectAuthTokenMiddleware } from "./lib/auth/inject-auth-token-middleware";
@@ -19,7 +23,7 @@ const OPEN_ACCESS_AUTH: ServerAuthContext = {
 };
 
 const sameOriginServerFnMiddleware = createMiddleware().server(({ next, request, ...args }) => {
-  if ((args as any).handlerType !== "serverFn") {
+  if ((args as MiddlewareContext).handlerType !== "serverFn") {
     return next();
   }
 
@@ -35,7 +39,7 @@ const sameOriginServerFnMiddleware = createMiddleware().server(({ next, request,
 });
 
 const authServerFnMiddleware = createMiddleware().server(async ({ next, request, ...args }) => {
-  if ((args as any).handlerType !== "serverFn") {
+  if ((args as MiddlewareContext).handlerType !== "serverFn") {
     return next();
   }
 

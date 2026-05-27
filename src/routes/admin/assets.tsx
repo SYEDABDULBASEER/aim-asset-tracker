@@ -352,7 +352,11 @@ function AssetsPage() {
         `${result.updated.length} updated`,
         `${result.skipped.length} skipped`,
       ].join(", ");
-      if (result.created.length === 0 && result.updated.length === 0 && result.errors.length === 0) {
+      if (
+        result.created.length === 0 &&
+        result.updated.length === 0 &&
+        result.errors.length === 0
+      ) {
         toast.error("No assets were imported", { description: summary });
         return;
       }
@@ -425,7 +429,8 @@ function AssetsPage() {
                 const rows = parseAssetImportCsv(text).filter((row) => row.id && row.name);
                 if (!rows.length) {
                   toast.error("No valid rows found in CSV", {
-                    description: "Include id and name columns. Export a template from Assets if needed.",
+                    description:
+                      "Include id and name columns. Export a template from Assets if needed.",
                   });
                   return;
                 }
@@ -517,7 +522,9 @@ function AssetsPage() {
             label="Warranty"
             value={warrantyBand}
             options={WARRANTY_BAND_OPTIONS.map((option) => option.value)}
-            displayValue={(v) => WARRANTY_BAND_OPTIONS.find((option) => option.value === v)?.label ?? v}
+            displayValue={(v) =>
+              WARRANTY_BAND_OPTIONS.find((option) => option.value === v)?.label ?? v
+            }
             onChange={(v) => {
               setWarrantyBand(v);
               setPage(0);
@@ -570,154 +577,158 @@ function AssetsPage() {
       {isLoading && assets.length === 0 ? (
         <ListPageSkeleton rows={8} columns={7} />
       ) : (
-      <TableCard scrollLabel="Asset inventory">
-        {isError ? (
-          <AuthStatusBanner
-            error={formatAssetsQueryError(error)}
-            onRetry={() => void refetch()}
-            onSignOut={auth.user ? () => void auth.signOut() : undefined}
-          />
-        ) : null}
-        {!isLoading && !isError && assets.length === 0 ? (
-          <EmptyState
-            title={hasFilters ? "No assets match your filters" : "No assets yet"}
-            description={
-              hasFilters
-                ? "Try clearing filters or broadening your search."
-                : "Add your first asset or import a CSV to populate inventory."
-            }
-            action={
-              canWriteAssets && !hasFilters ? (
-                <Button
-                  type="button"
-                  className="h-9 shadow-soft"
-                  onClick={() => {
-                    setFormValues(emptyForm());
-                    setCreateOpen(true);
-                  }}
-                >
-                  <Plus className="h-4 w-4" />
-                  Add asset
-                </Button>
-              ) : undefined
-            }
-          />
-        ) : (
-        <table className="w-full text-sm">
-          <thead className="bg-muted/50">
-            <tr className="text-[11px] uppercase tracking-wider text-muted-foreground">
-              <th className="text-left font-medium px-4 py-3">Asset ID</th>
-              <th className="text-left font-medium px-4 py-3">Name</th>
-              <th className="text-left font-medium px-4 py-3 hidden md:table-cell">Status</th>
-              <th className="text-left font-medium px-4 py-3 hidden md:table-cell">Category</th>
-              <th className="text-left font-medium px-4 py-3 hidden md:table-cell">Assigned to</th>
-              <th className="text-left font-medium px-4 py-3 hidden lg:table-cell">S No</th>
-              <th className="text-left font-medium px-4 py-3 hidden lg:table-cell">Desk</th>
-              <th className="px-4 py-3" />
-            </tr>
-          </thead>
-          <tbody>
-            {assets.map((a) => (
-              <tr key={a.id} className="border-t border-border hover:bg-muted/30 transition">
-                <td className="px-4 py-3 font-medium">
-                  <Link
-                    to="/admin/assets/$id"
-                    params={{ id: a.id }}
-                    search={{ q: undefined }}
-                    className="text-primary hover:underline"
+        <TableCard scrollLabel="Asset inventory">
+          {isError ? (
+            <AuthStatusBanner
+              error={formatAssetsQueryError(error)}
+              onRetry={() => void refetch()}
+              onSignOut={auth.user ? () => void auth.signOut() : undefined}
+            />
+          ) : null}
+          {!isLoading && !isError && assets.length === 0 ? (
+            <EmptyState
+              title={hasFilters ? "No assets match your filters" : "No assets yet"}
+              description={
+                hasFilters
+                  ? "Try clearing filters or broadening your search."
+                  : "Add your first asset or import a CSV to populate inventory."
+              }
+              action={
+                canWriteAssets && !hasFilters ? (
+                  <Button
+                    type="button"
+                    className="h-9 shadow-soft"
+                    onClick={() => {
+                      setFormValues(emptyForm());
+                      setCreateOpen(true);
+                    }}
                   >
-                    {a.id}
-                  </Link>
-                </td>
-                <td className="px-4 py-3">
-                  <AssetNameCell asset={a} />
-                </td>
-                <td className="px-4 py-3 hidden md:table-cell">
-                  <StatusPill tone={assetStatusTone(a.status)}>{a.status}</StatusPill>
-                </td>
-                <td className="px-4 py-3 text-muted-foreground hidden md:table-cell">{a.category}</td>
-                <td className="px-4 py-3 hidden md:table-cell">{a.assignedTo ?? "—"}</td>
-                <td className="px-4 py-3 text-muted-foreground font-mono text-xs hidden lg:table-cell">
-                  {a.serial ?? "—"}
-                </td>
-                <td className="px-4 py-3 font-mono text-xs text-muted-foreground hidden lg:table-cell">
-                  {a.location ?? "—"}
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex items-center justify-end gap-1">
-                    {canWriteAssets ? (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        className="h-7 w-7"
-                        aria-label={`Edit ${a.id}`}
-                        onClick={() => {
-                          setEditTarget(a);
-                          setFormValues(assetToFormValues(a));
-                        }}
+                    <Plus className="h-4 w-4" />
+                    Add asset
+                  </Button>
+                ) : undefined
+              }
+            />
+          ) : (
+            <table className="w-full text-sm">
+              <thead className="bg-muted/50">
+                <tr className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                  <th className="text-left font-medium px-4 py-3">Asset ID</th>
+                  <th className="text-left font-medium px-4 py-3">Name</th>
+                  <th className="text-left font-medium px-4 py-3 hidden md:table-cell">Status</th>
+                  <th className="text-left font-medium px-4 py-3 hidden md:table-cell">Category</th>
+                  <th className="text-left font-medium px-4 py-3 hidden md:table-cell">
+                    Assigned to
+                  </th>
+                  <th className="text-left font-medium px-4 py-3 hidden lg:table-cell">S No</th>
+                  <th className="text-left font-medium px-4 py-3 hidden lg:table-cell">Desk</th>
+                  <th className="px-4 py-3" />
+                </tr>
+              </thead>
+              <tbody>
+                {assets.map((a) => (
+                  <tr key={a.id} className="border-t border-border hover:bg-muted/30 transition">
+                    <td className="px-4 py-3 font-medium">
+                      <Link
+                        to="/admin/assets/$id"
+                        params={{ id: a.id }}
+                        search={{ q: undefined }}
+                        className="text-primary hover:underline"
                       >
-                        <Pencil className="h-3.5 w-3.5" />
-                      </Button>
-                    ) : null}
-                    {isAdmin ? (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        className={`h-7 w-7 ${destructiveIconButtonClass}`}
-                        aria-label={`Delete asset ${a.id}`}
-                        onClick={() => setDeleteTargetId(a.id)}
-                      >
-                        <Trash2 className="h-3.5 w-3.5" aria-hidden />
-                      </Button>
-                    ) : null}
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        )}
-        {!isError && assets.length > 0 ? (
-        <div className="flex items-center justify-between px-4 py-3 border-t border-border text-xs text-muted-foreground">
-          <span>
-            Showing {total === 0 ? 0 : page * PAGE_SIZE + 1}–
-            {Math.min((page + 1) * PAGE_SIZE, total)} of {total}
-          </span>
-          <div className="flex items-center gap-1">
-            <button
-              type="button"
-              className="h-7 px-2 rounded border border-border hover:bg-muted disabled:opacity-40"
-              disabled={page <= 0}
-              onClick={() => setPage((p) => Math.max(0, p - 1))}
-            >
-              Prev
-            </button>
-            {pageWindow.map((n) => (
-              <button
-                key={n}
-                type="button"
-                className={`h-7 w-7 rounded text-xs ${
-                  page === n ? "bg-primary text-primary-foreground" : "hover:bg-muted"
-                }`}
-                onClick={() => setPage(n)}
-              >
-                {n + 1}
-              </button>
-            ))}
-            <button
-              type="button"
-              className="h-7 px-2 rounded border border-border hover:bg-muted disabled:opacity-40"
-              disabled={page >= totalPages - 1}
-              onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
-            >
-              Next
-            </button>
-          </div>
-        </div>
-        ) : null}
-      </TableCard>
+                        {a.id}
+                      </Link>
+                    </td>
+                    <td className="px-4 py-3">
+                      <AssetNameCell asset={a} />
+                    </td>
+                    <td className="px-4 py-3 hidden md:table-cell">
+                      <StatusPill tone={assetStatusTone(a.status)}>{a.status}</StatusPill>
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground hidden md:table-cell">
+                      {a.category}
+                    </td>
+                    <td className="px-4 py-3 hidden md:table-cell">{a.assignedTo ?? "—"}</td>
+                    <td className="px-4 py-3 text-muted-foreground font-mono text-xs hidden lg:table-cell">
+                      {a.serial ?? "—"}
+                    </td>
+                    <td className="px-4 py-3 font-mono text-xs text-muted-foreground hidden lg:table-cell">
+                      {a.location ?? "—"}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center justify-end gap-1">
+                        {canWriteAssets ? (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            className="h-7 w-7"
+                            aria-label={`Edit ${a.id}`}
+                            onClick={() => {
+                              setEditTarget(a);
+                              setFormValues(assetToFormValues(a));
+                            }}
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                          </Button>
+                        ) : null}
+                        {isAdmin ? (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            className={`h-7 w-7 ${destructiveIconButtonClass}`}
+                            aria-label={`Delete asset ${a.id}`}
+                            onClick={() => setDeleteTargetId(a.id)}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" aria-hidden />
+                          </Button>
+                        ) : null}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+          {!isError && assets.length > 0 ? (
+            <div className="flex items-center justify-between px-4 py-3 border-t border-border text-xs text-muted-foreground">
+              <span>
+                Showing {total === 0 ? 0 : page * PAGE_SIZE + 1}–
+                {Math.min((page + 1) * PAGE_SIZE, total)} of {total}
+              </span>
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  className="h-7 px-2 rounded border border-border hover:bg-muted disabled:opacity-40"
+                  disabled={page <= 0}
+                  onClick={() => setPage((p) => Math.max(0, p - 1))}
+                >
+                  Prev
+                </button>
+                {pageWindow.map((n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    className={`h-7 w-7 rounded text-xs ${
+                      page === n ? "bg-primary text-primary-foreground" : "hover:bg-muted"
+                    }`}
+                    onClick={() => setPage(n)}
+                  >
+                    {n + 1}
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  className="h-7 px-2 rounded border border-border hover:bg-muted disabled:opacity-40"
+                  disabled={page >= totalPages - 1}
+                  onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          ) : null}
+        </TableCard>
       )}
 
       <AssetFormDialog

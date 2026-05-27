@@ -3,8 +3,7 @@ import { staffWorkspaceAuthRequired } from "@/lib/auth/staff-workspace-auth";
 
 const PATCHED = Symbol.for("assetdesk.authFetchPatched");
 
-let nativeFetch: typeof fetch =
-  typeof window !== "undefined" ? window.fetch.bind(window) : fetch;
+let nativeFetch: typeof fetch = typeof window !== "undefined" ? window.fetch.bind(window) : fetch;
 
 /** Unpatched fetch — use for server function HTTP after adding auth headers. */
 export function getNativeFetch(): typeof fetch {

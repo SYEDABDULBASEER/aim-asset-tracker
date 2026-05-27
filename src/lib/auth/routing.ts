@@ -91,4 +91,3 @@ export function resolveStaffLoginRedirect(redirect: string | undefined): string 
   if (trimmed.startsWith("/admin")) return trimmed;
   return ADMIN_HOME_PATH;
 }
-

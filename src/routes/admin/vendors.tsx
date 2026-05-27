@@ -170,96 +170,98 @@ function Vendors() {
       {isLoading ? (
         <ListPageSkeleton rows={6} columns={7} />
       ) : (
-      <TableCard scrollLabel="Vendors">
-        {isError ? (
-          <AuthStatusBanner
-            error={formatListQueryError(error)}
-            onRetry={() => void refetch()}
-            onSignOut={auth.user ? () => void auth.signOut() : undefined}
-          />
-        ) : null}
-        {!isError && vendors.length === 0 ? (
-          <EmptyState
-            icon={Building2}
-            title="No vendors yet"
-            description="Add service providers to track SLAs and maintenance partners."
-            action={
-              isAdmin ? (
-                <Button
-                  type="button"
-                  className="h-9 shadow-soft"
-                  onClick={() => {
-                    setEditingId(null);
-                    setFormValues(emptyVendorForm());
-                    setDialogOpen(true);
-                  }}
-                >
-                  <Plus className="h-4 w-4" />
-                  Add vendor
-                </Button>
-              ) : undefined
-            }
-          />
-        ) : (
-        <table className="w-full text-sm">
-          <thead className="bg-muted/50">
-            <tr className="text-[11px] uppercase tracking-wider text-muted-foreground">
-              {["Vendor", "Category", "Contact", "Contracts", "SLA", "Response", ""].map((header) => (
-                <th key={header || "actions"} className="text-left font-medium px-4 py-3">
-                  {header}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {vendors.map((vendor) => (
-              <tr key={vendor.id} className="border-t border-border hover:bg-muted/30">
-                <td className="px-4 py-3 font-medium">{vendor.name}</td>
-                <td className="px-4 py-3 text-muted-foreground">{vendor.category}</td>
-                <td className="px-4 py-3 text-muted-foreground">{vendor.contactEmail}</td>
-                <td className="px-4 py-3">{vendor.contracts}</td>
-                <td className="px-4 py-3">
-                  <StatusPill tone={vendorSlaTone(vendor.slaPercent)}>
-                    {vendor.slaPercent}%
-                  </StatusPill>
-                </td>
-                <td className="px-4 py-3 text-muted-foreground">{vendor.responseHours}h</td>
-                <td className="px-4 py-3">
-                  {isAdmin ? (
-                    <div className="flex gap-1">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        className="h-7 w-7"
-                        onClick={() => {
-                          setEditingId(vendor.id);
-                          setFormValues(vendorToForm(vendor));
-                          setDialogOpen(true);
-                        }}
-                      >
-                        <Pencil className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        className={`h-7 w-7 ${destructiveIconButtonClass}`}
-                        aria-label={`Delete vendor ${vendor.name}`}
-                        onClick={() => setDeleteTargetId(vendor.id)}
-                        disabled={deleteMut.isPending}
-                      >
-                        <Trash2 className="h-3.5 w-3.5" aria-hidden />
-                      </Button>
-                    </div>
-                  ) : null}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        )}
-      </TableCard>
+        <TableCard scrollLabel="Vendors">
+          {isError ? (
+            <AuthStatusBanner
+              error={formatListQueryError(error)}
+              onRetry={() => void refetch()}
+              onSignOut={auth.user ? () => void auth.signOut() : undefined}
+            />
+          ) : null}
+          {!isError && vendors.length === 0 ? (
+            <EmptyState
+              icon={Building2}
+              title="No vendors yet"
+              description="Add service providers to track SLAs and maintenance partners."
+              action={
+                isAdmin ? (
+                  <Button
+                    type="button"
+                    className="h-9 shadow-soft"
+                    onClick={() => {
+                      setEditingId(null);
+                      setFormValues(emptyVendorForm());
+                      setDialogOpen(true);
+                    }}
+                  >
+                    <Plus className="h-4 w-4" />
+                    Add vendor
+                  </Button>
+                ) : undefined
+              }
+            />
+          ) : (
+            <table className="w-full text-sm">
+              <thead className="bg-muted/50">
+                <tr className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                  {["Vendor", "Category", "Contact", "Contracts", "SLA", "Response", ""].map(
+                    (header) => (
+                      <th key={header || "actions"} className="text-left font-medium px-4 py-3">
+                        {header}
+                      </th>
+                    ),
+                  )}
+                </tr>
+              </thead>
+              <tbody>
+                {vendors.map((vendor) => (
+                  <tr key={vendor.id} className="border-t border-border hover:bg-muted/30">
+                    <td className="px-4 py-3 font-medium">{vendor.name}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{vendor.category}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{vendor.contactEmail}</td>
+                    <td className="px-4 py-3">{vendor.contracts}</td>
+                    <td className="px-4 py-3">
+                      <StatusPill tone={vendorSlaTone(vendor.slaPercent)}>
+                        {vendor.slaPercent}%
+                      </StatusPill>
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">{vendor.responseHours}h</td>
+                    <td className="px-4 py-3">
+                      {isAdmin ? (
+                        <div className="flex gap-1">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            className="h-7 w-7"
+                            onClick={() => {
+                              setEditingId(vendor.id);
+                              setFormValues(vendorToForm(vendor));
+                              setDialogOpen(true);
+                            }}
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            className={`h-7 w-7 ${destructiveIconButtonClass}`}
+                            aria-label={`Delete vendor ${vendor.name}`}
+                            onClick={() => setDeleteTargetId(vendor.id)}
+                            disabled={deleteMut.isPending}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" aria-hidden />
+                          </Button>
+                        </div>
+                      ) : null}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </TableCard>
       )}
 
       <AlertDialog
@@ -305,7 +307,9 @@ function Vendors() {
                 id="vendor-id"
                 value={formValues.id}
                 readOnly={Boolean(editingId)}
-                onChange={(event) => setFormValues((current) => ({ ...current, id: event.target.value }))}
+                onChange={(event) =>
+                  setFormValues((current) => ({ ...current, id: event.target.value }))
+                }
               />
             </div>
             <div className="grid gap-1.5">
@@ -313,7 +317,9 @@ function Vendors() {
               <Input
                 id="vendor-name"
                 value={formValues.name}
-                onChange={(event) => setFormValues((current) => ({ ...current, name: event.target.value }))}
+                onChange={(event) =>
+                  setFormValues((current) => ({ ...current, name: event.target.value }))
+                }
               />
             </div>
             <div className="grid gap-1.5">

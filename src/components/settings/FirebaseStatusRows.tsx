@@ -48,11 +48,7 @@ export function FirebaseStatusRows({
     return (
       <div className="rounded-lg border border-border bg-card/50 px-3">
         <StatusRow label="Backend" value="In-memory demo store" status="off" />
-        <StatusRow
-          label="Firebase"
-          value="Not configured (see FIREBASE_SETUP.md)"
-          status="off"
-        />
+        <StatusRow label="Firebase" value="Not configured (see FIREBASE_SETUP.md)" status="off" />
       </div>
     );
   }

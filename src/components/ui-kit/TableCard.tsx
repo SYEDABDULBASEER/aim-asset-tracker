@@ -43,9 +43,7 @@ export function AdminTableHead({ children }: { children: ReactNode }) {
 }
 
 export function AdminTableHeadRow({ children }: { children: ReactNode }) {
-  return (
-    <tr className="text-[11px] uppercase tracking-wider text-muted-foreground">{children}</tr>
-  );
+  return <tr className="text-[11px] uppercase tracking-wider text-muted-foreground">{children}</tr>;
 }
 
 export function AdminTableHeadCell({

@@ -192,61 +192,61 @@ function Employees() {
           }
         />
       ) : (
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {employees.map((employee) => (
-          <Card key={employee.id} className="p-5 flex items-center gap-4">
-            <div className="h-12 w-12 rounded-full bg-gradient-to-br from-primary to-chart-5 text-white text-sm font-semibold flex items-center justify-center">
-              {employee.name
-                .split(" ")
-                .map((part) => part[0])
-                .join("")}
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="font-semibold">{employee.name}</div>
-              <div className="text-xs text-muted-foreground">
-                {employee.role} · {employee.department}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {employees.map((employee) => (
+            <Card key={employee.id} className="p-5 flex items-center gap-4">
+              <div className="h-12 w-12 rounded-full bg-gradient-to-br from-primary to-chart-5 text-white text-sm font-semibold flex items-center justify-center">
+                {employee.name
+                  .split(" ")
+                  .map((part) => part[0])
+                  .join("")}
               </div>
-              <div className="text-[11px] text-muted-foreground mt-0.5 truncate">
-                {employee.email}
-              </div>
-            </div>
-            <div className="text-right">
-              <div className="text-xl font-semibold">{employee.assetCount}</div>
-              <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                assets
-              </div>
-              {isAdmin ? (
-                <div className="mt-2 flex justify-end gap-1">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    className="h-7 w-7"
-                    onClick={() => {
-                      setEditingId(employee.id);
-                      setFormValues(employeeToForm(employee));
-                      setDialogOpen(true);
-                    }}
-                  >
-                    <Pencil className="h-3.5 w-3.5" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    className={`h-7 w-7 ${destructiveIconButtonClass}`}
-                    aria-label={`Delete employee ${employee.name}`}
-                    onClick={() => setDeleteTargetId(employee.id)}
-                    disabled={deleteMut.isPending}
-                  >
-                    <Trash2 className="h-3.5 w-3.5" aria-hidden />
-                  </Button>
+              <div className="min-w-0 flex-1">
+                <div className="font-semibold">{employee.name}</div>
+                <div className="text-xs text-muted-foreground">
+                  {employee.role} · {employee.department}
                 </div>
-              ) : null}
-            </div>
-          </Card>
-        ))}
-      </div>
+                <div className="text-[11px] text-muted-foreground mt-0.5 truncate">
+                  {employee.email}
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-xl font-semibold">{employee.assetCount}</div>
+                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                  assets
+                </div>
+                {isAdmin ? (
+                  <div className="mt-2 flex justify-end gap-1">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="h-7 w-7"
+                      onClick={() => {
+                        setEditingId(employee.id);
+                        setFormValues(employeeToForm(employee));
+                        setDialogOpen(true);
+                      }}
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className={`h-7 w-7 ${destructiveIconButtonClass}`}
+                      aria-label={`Delete employee ${employee.name}`}
+                      onClick={() => setDeleteTargetId(employee.id)}
+                      disabled={deleteMut.isPending}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" aria-hidden />
+                    </Button>
+                  </div>
+                ) : null}
+              </div>
+            </Card>
+          ))}
+        </div>
       )}
 
       <AlertDialog
@@ -292,7 +292,9 @@ function Employees() {
                 id="employee-id"
                 value={formValues.id}
                 readOnly={Boolean(editingId)}
-                onChange={(event) => setFormValues((current) => ({ ...current, id: event.target.value }))}
+                onChange={(event) =>
+                  setFormValues((current) => ({ ...current, id: event.target.value }))
+                }
               />
             </div>
             <div className="grid gap-1.5">
@@ -300,7 +302,9 @@ function Employees() {
               <Input
                 id="employee-name"
                 value={formValues.name}
-                onChange={(event) => setFormValues((current) => ({ ...current, name: event.target.value }))}
+                onChange={(event) =>
+                  setFormValues((current) => ({ ...current, name: event.target.value }))
+                }
               />
             </div>
             <div className="grid gap-1.5">
@@ -308,7 +312,9 @@ function Employees() {
               <Input
                 id="employee-role"
                 value={formValues.role}
-                onChange={(event) => setFormValues((current) => ({ ...current, role: event.target.value }))}
+                onChange={(event) =>
+                  setFormValues((current) => ({ ...current, role: event.target.value }))
+                }
               />
             </div>
             <div className="grid gap-1.5">
@@ -327,7 +333,9 @@ function Employees() {
                 id="employee-email"
                 type="email"
                 value={formValues.email}
-                onChange={(event) => setFormValues((current) => ({ ...current, email: event.target.value }))}
+                onChange={(event) =>
+                  setFormValues((current) => ({ ...current, email: event.target.value }))
+                }
               />
             </div>
           </div>

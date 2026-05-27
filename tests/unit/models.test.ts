@@ -1,10 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  AssetCreateSchema,
-  AssetSchema,
-  AssetUpdateSchema,
-  TicketSchema,
-} from "@/lib/models";
+import { AssetCreateSchema, AssetSchema, AssetUpdateSchema, TicketSchema } from "@/lib/models";
 
 describe("models (Zod)", () => {
   const validAsset = {

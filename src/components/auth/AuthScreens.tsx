@@ -10,11 +10,7 @@ type AuthScreenProps = {
   redirectTo?: string;
 };
 
-export function AuthLoadingScreen({
-  message = "Checking sign-in…",
-}: {
-  message?: string;
-}) {
+export function AuthLoadingScreen({ message = "Checking sign-in…" }: { message?: string }) {
   return (
     <div
       className="min-h-[50vh] flex flex-col items-center justify-center gap-3 text-muted-foreground px-4"
@@ -38,10 +34,7 @@ export function AuthRequiredScreen({
       </div>
       <p className="text-sm text-muted-foreground max-w-sm leading-relaxed">{message}</p>
       <Button asChild>
-        <Link
-          to={STAFF_LOGIN_PATH}
-          search={redirectTo ? { redirect: redirectTo } : undefined}
-        >
+        <Link to={STAFF_LOGIN_PATH} search={redirectTo ? { redirect: redirectTo } : undefined}>
           Sign in — IT staff
         </Link>
       </Button>

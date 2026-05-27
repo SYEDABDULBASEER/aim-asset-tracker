@@ -9,12 +9,7 @@ type AppBrandNameProps = {
 
 export function AppBrandName({ className, variant = "default" }: AppBrandNameProps) {
   return (
-    <span
-      className={cn(
-        variant === "on-dark" ? "text-brand-light" : "text-brand",
-        className,
-      )}
-    >
+    <span className={cn(variant === "on-dark" ? "text-brand-light" : "text-brand", className)}>
       {APP_NAME}
     </span>
   );

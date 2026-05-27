@@ -16,7 +16,7 @@ export function isServerFnSameOriginAllowed(
         (secFetchSite === "same-origin" ||
           secFetchSite === "same-site" ||
           secFetchSite === "none")) ||
-        (origin && origin === urlOrigin),
+      (origin && origin === urlOrigin),
     );
   }
 

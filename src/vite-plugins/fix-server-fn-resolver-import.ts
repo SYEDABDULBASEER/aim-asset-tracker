@@ -2,8 +2,7 @@ import { resolve } from "node:path";
 import type { Plugin } from "vite";
 
 const RESOLVER_MARKER = "tanstack-start-server-fn-resolver";
-const IMPORT_RE =
-  /await import\(\/\* @vite-ignore \*\/ devServerFn\.file\)/;
+const IMPORT_RE = /await import\(\/\* @vite-ignore \*\/ devServerFn\.file\)/;
 
 /**
  * TanStack dev `getServerFnById` imports `devServerFn.file` (e.g. `/src/utils/foo.ts?split`).

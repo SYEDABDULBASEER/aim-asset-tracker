@@ -4,12 +4,7 @@ import { EmptyState } from "@/components/ui-kit/EmptyState";
 import { PageShell } from "@/components/ui-kit/PageShell";
 import { StatCard } from "@/components/ui-kit/StatCard";
 import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   ResponsiveContainer,
   AreaChart,
@@ -78,10 +73,7 @@ function Reports() {
   const hasHeatmapData = heatmap.some((cell) => cell.intensity > 0);
   const hasSlaData = (data?.slaAdherencePercent ?? 0) > 0 || (data?.kpis.openTickets ?? 0) > 0;
 
-  const canExport = useMemo(
-    () => !isLoading && reportsHasExportableData(data),
-    [isLoading, data],
-  );
+  const canExport = useMemo(() => !isLoading && reportsHasExportableData(data), [isLoading, data]);
 
   const exportDisabledReason = isLoading
     ? "Loading report data…"
@@ -89,7 +81,9 @@ function Reports() {
       ? "Report data is not available yet"
       : "Add assets, tickets, or vendors before exporting";
 
-  const resolution = [{ name: "SLA", value: data?.slaAdherencePercent ?? 0, fill: "var(--primary)" }];
+  const resolution = [
+    { name: "SLA", value: data?.slaAdherencePercent ?? 0, fill: "var(--primary)" },
+  ];
 
   const exportButton = (
     <Button

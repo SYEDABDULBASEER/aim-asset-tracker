@@ -1,7 +1,10 @@
 import { createAdminDocumentStore } from "@/lib/firebase/admin-document-store";
 import { isFirebaseAdminConfigured } from "@/lib/firebase/admin";
 import { FIRESTORE_TICKETS_COLLECTION } from "@/lib/firebase/env";
-import { shouldUseInMemoryStore, requireProductionPersistence } from "@/lib/firebase/production-persistence";
+import {
+  shouldUseInMemoryStore,
+  requireProductionPersistence,
+} from "@/lib/firebase/production-persistence";
 import type { Ticket } from "@/lib/models";
 import { TicketSchema } from "@/lib/models";
 import { firestoreListAllTickets } from "@/lib/firebase/tickets.firestore";

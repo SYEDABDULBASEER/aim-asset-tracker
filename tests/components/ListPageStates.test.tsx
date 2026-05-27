@@ -43,7 +43,9 @@ describe("admin list page state machine", () => {
 
   it("shows error banner on failure", () => {
     render(<ListPagePreview error={new Error("Sign in required.")} items={[]} />);
-    expect(screen.getByRole("alert")).toHaveTextContent(formatListQueryError(new Error("Sign in required.")));
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      formatListQueryError(new Error("Sign in required.")),
+    );
   });
 
   it("shows empty state when no items", () => {

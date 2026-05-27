@@ -19,11 +19,14 @@ function createItWorkspaceServerFnFetch(): typeof fetch {
  * required. Resolves the token from the Auth singleton (not React effects) so the first request
  * after sign-in is authenticated.
  */
-// TanStack server fetchers are not plain functions; `any` keeps call sites typed via return inference.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ServerFnCallOptions = {
+  headers?: Record<string, string>;
+  fetch?: typeof fetch;
+};
+
 export async function callAuthenticatedServerFn<T>(
-  serverFn: (opts?: any) => Promise<T>,
-  opts?: any,
+  serverFn: (opts?: ServerFnCallOptions) => Promise<T>,
+  opts?: ServerFnCallOptions,
 ): Promise<T> {
   const headers: Record<string, string> = {
     ...(opts?.headers as Record<string, string> | undefined),
@@ -50,8 +53,8 @@ export async function callAuthenticatedServerFn<T>(
  * the server runs ticket handlers under a synthetic guest context (same-origin only).
  */
 export async function callEmployeePortalServerFn<T>(
-  serverFn: (opts?: any) => Promise<T>,
-  opts?: any,
+  serverFn: (opts?: ServerFnCallOptions) => Promise<T>,
+  opts?: ServerFnCallOptions,
 ): Promise<T> {
   const headers = {
     ...(opts?.headers as Record<string, string> | undefined),
