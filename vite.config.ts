@@ -20,6 +20,10 @@ export default defineConfig({
     },
   },
   vite: {
+    server: {
+      /** Allow ngrok (and other *.ngrok-free.dev) tunnels in dev — Vite 7 Host header check. */
+      allowedHosts: [".ngrok-free.dev"],
+    },
     plugins: [
       bypassServerFnIdValidationPlugin(),
       warmupTanStackServerFnModulesPlugin(),

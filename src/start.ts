@@ -1,10 +1,15 @@
 import { createStart, createMiddleware } from "@tanstack/react-start";
 
 import { renderErrorPage } from "./lib/error-page";
-import { EMPLOYEE_PORTAL_FN_HEADER, EMPLOYEE_PORTAL_FN_HEADER_VALUE, PORTAL_GUEST_SERVER_AUTH } from "./lib/auth/employee-portal";
+import {
+  EMPLOYEE_PORTAL_FN_HEADER,
+  EMPLOYEE_PORTAL_FN_HEADER_VALUE,
+  PORTAL_GUEST_SERVER_AUTH,
+} from "./lib/auth/employee-portal";
 import { runWithRequestContext, type ServerAuthContext } from "./lib/auth/request-context";
 import { attachAuthToRequest } from "./lib/auth/require-auth";
 import { injectAuthTokenMiddleware } from "./lib/auth/inject-auth-token-middleware";
+import { isServerFnSameOriginAllowed } from "./lib/auth/same-origin-server-fn";
 import { extractBearerToken, verifyFirebaseIdToken } from "./lib/auth/server";
 import { FIREBASE_ID_TOKEN_HEADER } from "./lib/auth/auth-headers";
 import { staffWorkspaceAuthRequired } from "./lib/auth/staff-workspace-auth";
@@ -18,56 +23,23 @@ const OPEN_ACCESS_AUTH: ServerAuthContext = {
 };
 
 const sameOriginServerFnMiddleware = createMiddleware().server(({ next, request, ...args }) => {
-  if ((args as any).handlerType !== "serverFn") {
+  if ((args as MiddlewareContext).handlerType !== "serverFn") {
     return next();
   }
 
-  const urlOrigin = new URL(request.url).origin;
-  const secFetchSite = request.headers.get("sec-fetch-site");
-
-  if (import.meta.env.PROD) {
-    const origin = request.headers.get("origin");
-    const allowed =
-      (secFetchSite &&
-        (secFetchSite === "same-origin" ||
-          secFetchSite === "same-site" ||
-          secFetchSite === "none")) ||
-      (origin && origin === urlOrigin);
-    if (!allowed) {
-      return new Response("Forbidden", { status: 403 });
-    }
-  } else {
-    if (
-      secFetchSite &&
-      (secFetchSite === "same-origin" || secFetchSite === "same-site" || secFetchSite === "none")
-    ) {
-      // allowed
-    } else {
-      const origin = request.headers.get("origin");
-      if (origin && origin === urlOrigin) {
-        // allowed
-      } else {
-        const referer = request.headers.get("referer");
-        if (referer) {
-          try {
-            if (new URL(referer).origin !== urlOrigin) {
-              return new Response("Forbidden", { status: 403 });
-            }
-          } catch {
-            return new Response("Forbidden", { status: 403 });
-          }
-        } else if (import.meta.env.PROD) {
-          return new Response("Forbidden", { status: 403 });
-        }
-      }
-    }
+  if (
+    !isServerFnSameOriginAllowed(request, {
+      production: Boolean(import.meta.env.PROD),
+    })
+  ) {
+    return new Response("Forbidden", { status: 403 });
   }
 
   return next();
 });
 
 const authServerFnMiddleware = createMiddleware().server(async ({ next, request, ...args }) => {
-  if ((args as any).handlerType !== "serverFn") {
+  if ((args as MiddlewareContext).handlerType !== "serverFn") {
     return next();
   }
 

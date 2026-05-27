@@ -45,7 +45,7 @@ export const Route = createFileRoute("/admin/allocation")({
   validateSearch: (search: Record<string, unknown>): AllocationSearch => ({
     assetId: typeof search.assetId === "string" ? search.assetId : undefined,
   }),
-  head: () => ({ meta: [{ title: "Asset Allocation — Asset Desk" }] }),
+  head: () => ({ meta: [{ title: "Asset Allocation — AssetSphere" }] }),
   component: Allocation,
 });
 
@@ -158,93 +158,97 @@ function Allocation() {
       {isLoading ? (
         <ListPageSkeleton rows={6} columns={6} />
       ) : (
-      <TableCard scrollLabel="Asset transfer requests">
-        {isError ? (
-          <AuthStatusBanner
-            error={formatListQueryError(error)}
-            onRetry={() => void refetch()}
-            onSignOut={auth.user ? () => void auth.signOut() : undefined}
-          />
-        ) : null}
-        {!isError && rows.length === 0 ? (
-          <EmptyState
-            icon={ArrowLeftRight}
-            title="No transfer requests"
-            description={
-              searchAssetId
-                ? "No allocation history for this asset yet."
-                : "Create a transfer when equipment moves between people or locations."
-            }
-            action={
-              <Button type="button" className="h-9 shadow-soft" onClick={() => setCreateOpen(true)}>
-                <Plus className="h-4 w-4" />
-                New transfer
-              </Button>
-            }
-          />
-        ) : (
-        <table className="w-full text-sm">
-          <thead className="bg-muted/50">
-            <tr className="text-[11px] uppercase tracking-wider text-muted-foreground">
-              {["Date", "Asset", "From", "To", "Status", "Actions"].map((header) => (
-                <th key={header} className="text-left font-medium px-4 py-3">
-                  {header}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr key={row.id} className="border-t border-border hover:bg-muted/30">
-                <td className="px-4 py-3 text-muted-foreground">
-                  {format(new Date(row.requestedAt), "dd MMM yyyy")}
-                </td>
-                <td className="px-4 py-3 font-medium">
-                  <Link
-                    to="/admin/assets/$id"
-                    params={{ id: row.assetId }}
-                    search={{ q: undefined }}
-                    className="text-primary hover:underline"
-                  >
-                    {row.assetId}
-                  </Link>
-                  {assetMap.get(row.assetId) ? ` · ${assetMap.get(row.assetId)}` : ""}
-                </td>
-                <td className="px-4 py-3">{row.fromParty}</td>
-                <td className="px-4 py-3">{row.toParty}</td>
-                <td className="px-4 py-3">
-                  <StatusPill tone={transferStatusTone(row.status)}>{row.status}</StatusPill>
-                </td>
-                <td className="px-4 py-3">
-                  {row.status === "Pending" ? (
-                    <div className="flex gap-2">
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        onClick={() => statusMut.mutate({ id: row.id, status: "Approved" })}
+        <TableCard scrollLabel="Asset transfer requests">
+          {isError ? (
+            <AuthStatusBanner
+              error={formatListQueryError(error)}
+              onRetry={() => void refetch()}
+              onSignOut={auth.user ? () => void auth.signOut() : undefined}
+            />
+          ) : null}
+          {!isError && rows.length === 0 ? (
+            <EmptyState
+              icon={ArrowLeftRight}
+              title="No transfer requests"
+              description={
+                searchAssetId
+                  ? "No allocation history for this asset yet."
+                  : "Create a transfer when equipment moves between people or locations."
+              }
+              action={
+                <Button
+                  type="button"
+                  className="h-9 shadow-soft"
+                  onClick={() => setCreateOpen(true)}
+                >
+                  <Plus className="h-4 w-4" />
+                  New transfer
+                </Button>
+              }
+            />
+          ) : (
+            <table className="w-full text-sm">
+              <thead className="bg-muted/50">
+                <tr className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                  {["Date", "Asset", "From", "To", "Status", "Actions"].map((header) => (
+                    <th key={header} className="text-left font-medium px-4 py-3">
+                      {header}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row) => (
+                  <tr key={row.id} className="border-t border-border hover:bg-muted/30">
+                    <td className="px-4 py-3 text-muted-foreground">
+                      {format(new Date(row.requestedAt), "dd MMM yyyy")}
+                    </td>
+                    <td className="px-4 py-3 font-medium">
+                      <Link
+                        to="/admin/assets/$id"
+                        params={{ id: row.assetId }}
+                        search={{ q: undefined }}
+                        className="text-primary hover:underline"
                       >
-                        Approve
-                      </Button>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        onClick={() => statusMut.mutate({ id: row.id, status: "Rejected" })}
-                      >
-                        Reject
-                      </Button>
-                    </div>
-                  ) : (
-                    <span className="text-xs text-muted-foreground">—</span>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        )}
-      </TableCard>
+                        {row.assetId}
+                      </Link>
+                      {assetMap.get(row.assetId) ? ` · ${assetMap.get(row.assetId)}` : ""}
+                    </td>
+                    <td className="px-4 py-3">{row.fromParty}</td>
+                    <td className="px-4 py-3">{row.toParty}</td>
+                    <td className="px-4 py-3">
+                      <StatusPill tone={transferStatusTone(row.status)}>{row.status}</StatusPill>
+                    </td>
+                    <td className="px-4 py-3">
+                      {row.status === "Pending" ? (
+                        <div className="flex gap-2">
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() => statusMut.mutate({ id: row.id, status: "Approved" })}
+                          >
+                            Approve
+                          </Button>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() => statusMut.mutate({ id: row.id, status: "Rejected" })}
+                          >
+                            Reject
+                          </Button>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </TableCard>
       )}
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>

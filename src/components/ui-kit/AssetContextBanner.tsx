@@ -26,9 +26,7 @@ export function AssetContextBanner({
         >
           {assetId}
         </Link>
-        {assetLabel ? (
-          <span className="text-foreground font-medium"> · {assetLabel}</span>
-        ) : null}
+        {assetLabel ? <span className="text-foreground font-medium"> · {assetLabel}</span> : null}
       </span>
       <Button
         type="button"

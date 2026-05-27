@@ -83,7 +83,7 @@ function saveSeenPortalPopupIds(seen: Set<string>) {
 }
 
 export const Route = createFileRoute("/admin/")({
-  head: () => ({ meta: [{ title: "Dashboard — Asset Desk" }] }),
+  head: () => ({ meta: [{ title: "Dashboard — AssetSphere" }] }),
   component: Dashboard,
 });
 
@@ -179,6 +179,8 @@ function Dashboard() {
 
   const pieData = summary?.byCategory ?? [];
   const hasPieData = pieData.some((slice) => slice.value > 0);
+  const desktopPieData = summary?.byDesktopDepartment ?? [];
+  const hasDesktopPieData = desktopPieData.some((slice) => slice.value > 0);
   const recentTickets = summary?.tickets.recent ?? [];
   const riskAlerts = summary?.alerts ?? [];
 
@@ -324,7 +326,10 @@ function Dashboard() {
               <h2 className="text-sm font-semibold text-foreground">User-submitted requests</h2>
               <p className="text-xs text-muted-foreground mt-1 max-w-2xl">
                 These tickets were opened from the public{" "}
-                <Link to="/user/request-support" className="text-primary font-medium hover:underline">
+                <Link
+                  to="/user/request-support"
+                  className="text-primary font-medium hover:underline"
+                >
                   Report an issue
                 </Link>{" "}
                 page and are still <span className="font-medium">Open</span>.
@@ -365,7 +370,11 @@ function Dashboard() {
               <span
                 className={`inline-flex items-center gap-0.5 text-[11px] font-medium ${k.up ? "text-success" : "text-destructive"}`}
               >
-                {k.up ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
+                {k.up ? (
+                  <ArrowUpRight className="h-3 w-3" />
+                ) : (
+                  <ArrowDownRight className="h-3 w-3" />
+                )}
                 {k.delta}
               </span>
             }
@@ -497,6 +506,61 @@ function Dashboard() {
                     <span className="ml-auto font-medium">{d.value}</span>
                   </div>
                 ))}
+              </div>
+
+              <div className="mt-8 pt-6 border-t border-border">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-sm font-semibold">Desktop by Department</h3>
+                  <span className="text-xs text-muted-foreground">Randomized split</span>
+                </div>
+                {hasDesktopPieData ? (
+                  <>
+                    <div className="h-48">
+                      <ResponsiveContainer>
+                        <PieChart>
+                          <Pie
+                            data={desktopPieData}
+                            dataKey="value"
+                            innerRadius={45}
+                            outerRadius={75}
+                            paddingAngle={2}
+                            stroke="none"
+                          >
+                            {desktopPieData.map((_, i) => (
+                              <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                            ))}
+                          </Pie>
+                          <Tooltip
+                            contentStyle={{
+                              borderRadius: 8,
+                              border: "1px solid var(--border)",
+                              fontSize: 12,
+                            }}
+                          />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 mt-2">
+                      {desktopPieData.map((d, i) => (
+                        <div key={d.name} className="flex items-center gap-2 text-xs">
+                          <span
+                            className="h-2 w-2 rounded-full"
+                            style={{ background: PIE_COLORS[i % PIE_COLORS.length] }}
+                          />
+                          <span className="text-muted-foreground">{d.name}</span>
+                          <span className="ml-auto font-medium">{d.value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <EmptyState
+                    icon={Package}
+                    title="No desktop assets"
+                    description="Add Desktop assets to see a department breakdown."
+                    className="py-10"
+                  />
+                )}
               </div>
             </>
           ) : (

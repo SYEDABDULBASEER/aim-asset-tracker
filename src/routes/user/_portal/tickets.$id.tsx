@@ -13,7 +13,7 @@ import { getMyUserTicket } from "@/utils/tickets.functions";
 import { usePortalRequester } from "@/components/user/PortalRequesterProvider";
 
 export const Route = createFileRoute("/user/_portal/tickets/$id")({
-  head: ({ params }) => ({ meta: [{ title: `Ticket ${params.id} — Asset Desk` }] }),
+  head: ({ params }) => ({ meta: [{ title: `Ticket ${params.id} — AssetSphere` }] }),
   component: UserTicketDetailPage,
 });
 
@@ -21,7 +21,11 @@ function UserTicketDetailPage() {
   const { id } = Route.useParams();
   const { email, name, hasIdentity } = usePortalRequester();
 
-  const { data: ticket, isLoading, isError } = useQuery({
+  const {
+    data: ticket,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ["my-user-ticket", id, email, name],
     queryFn: () =>
       callEmployeePortalServerFn(getMyUserTicket, {
@@ -57,7 +61,10 @@ function UserTicketDetailPage() {
     return (
       <PageShell variant="portal">
         <p className="text-sm text-destructive">Ticket not found or you do not have access.</p>
-        <Link to={USER_HOME_PATH} className="text-sm text-primary mt-4 inline-block hover:underline">
+        <Link
+          to={USER_HOME_PATH}
+          className="text-sm text-primary mt-4 inline-block hover:underline"
+        >
           Back to portal
         </Link>
       </PageShell>
@@ -85,8 +92,10 @@ function UserTicketDetailPage() {
           {ticket.status === "Open" && "Your request is in the queue. IT will pick it up soon."}
           {ticket.status === "In Progress" && "IT is actively working on your request."}
           {ticket.status === "Waiting Parts" && "Work is paused until parts or approvals arrive."}
-          {ticket.status === "Resolved" && "IT considers this issue fixed. It may be closed shortly."}
-          {ticket.status === "Closed" && "This request is complete. Open a new ticket if you need more help."}
+          {ticket.status === "Resolved" &&
+            "IT considers this issue fixed. It may be closed shortly."}
+          {ticket.status === "Closed" &&
+            "This request is complete. Open a new ticket if you need more help."}
         </p>
         <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
           <div>

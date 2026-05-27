@@ -1,4 +1,7 @@
-import { shouldUseInMemoryStore, requireProductionPersistence } from "@/lib/firebase/production-persistence";
+import {
+  shouldUseInMemoryStore,
+  requireProductionPersistence,
+} from "@/lib/firebase/production-persistence";
 import type { MaintenanceJob } from "@/lib/models";
 import { firestoreListAllMaintenanceJobs } from "@/lib/firebase/maintenance.firestore";
 import { getStore } from "./store.server";

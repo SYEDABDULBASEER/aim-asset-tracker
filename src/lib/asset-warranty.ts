@@ -3,7 +3,10 @@ import type { WarrantyBand } from "@/lib/models";
 
 const EXPIRING_WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
 
-export function getWarrantyBand(asset: Pick<Asset, "warrantyUntil">, now = new Date()): WarrantyBand {
+export function getWarrantyBand(
+  asset: Pick<Asset, "warrantyUntil">,
+  now = new Date(),
+): WarrantyBand {
   if (!asset.warrantyUntil) return "unknown";
   const until = new Date(asset.warrantyUntil);
   if (Number.isNaN(until.getTime())) return "unknown";

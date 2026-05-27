@@ -1,4 +1,11 @@
-import { getDownloadURL, getMetadata, listAll, ref, uploadBytes, type StorageReference } from "firebase/storage";
+import {
+  getDownloadURL,
+  getMetadata,
+  listAll,
+  ref,
+  uploadBytes,
+  type StorageReference,
+} from "firebase/storage";
 import { getFirebaseStorage } from "./init";
 
 export type AssetDocument = {
@@ -31,7 +38,7 @@ export async function listAssetDocuments(assetId: string): Promise<AssetDocument
 }
 
 export async function uploadAssetDocument(assetId: string, file: File): Promise<AssetDocument> {
-  const safeName = file.name.replace(/[^\w.\-]+/g, "_");
+  const safeName = file.name.replace(/[^\w.-]+/g, "_");
   const objectRef = ref(assetDocumentsRoot(assetId), `${Date.now()}-${safeName}`);
   await uploadBytes(objectRef, file, { contentType: file.type || undefined });
   const url = await getDownloadURL(objectRef);

@@ -24,7 +24,8 @@ function loadEnvFile(path) {
 
 loadEnvFile(resolve(root, ".env"));
 
-const { isFirebaseAdminConfigured, getFirebaseAdminDb } = await import("../src/lib/firebase/admin.ts");
+const { isFirebaseAdminConfigured, getFirebaseAdminDb } =
+  await import("../src/lib/firebase/admin.ts");
 const { buildSeedAssets } = await import("../src/utils/seed.assets.ts");
 
 console.log("adminConfigured", isFirebaseAdminConfigured());

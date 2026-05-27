@@ -26,7 +26,8 @@ function parseAssetInput(data: z.infer<typeof AssetCreateSchema>) {
     ...data,
     id: data.id.trim(),
     assignedTo: data.assignedTo ?? null,
-    department: data.department ?? null,
+    // Treat empty-string department (common in CSV) as null/Unassigned.
+    department: data.department && data.department.trim() ? data.department.trim() : null,
     warrantyUntil: data.warrantyUntil ?? null,
     lastServiceAt: data.lastServiceAt ?? null,
     serial: data.serial ?? null,
@@ -205,7 +206,9 @@ export const exportAssetsCsv = createServerFn({ method: "GET" }).handler(async (
   ];
   const lines = [
     header.join(","),
-    ...all.map((a) => header.map((key) => csvEscape(String(a[key as keyof typeof a] ?? ""))).join(",")),
+    ...all.map((a) =>
+      header.map((key) => csvEscape(String(a[key as keyof typeof a] ?? ""))).join(","),
+    ),
   ];
   return { csv: lines.join("\n"), filename: "assets-export.csv" };
 });

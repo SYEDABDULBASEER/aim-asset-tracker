@@ -64,7 +64,7 @@ export const Route = createFileRoute("/admin/tickets")({
   validateSearch: (search: Record<string, unknown>): TicketsSearch => ({
     assetId: typeof search.assetId === "string" ? search.assetId : undefined,
   }),
-  head: () => ({ meta: [{ title: "Tickets — Asset Desk" }] }),
+  head: () => ({ meta: [{ title: "Tickets — AssetSphere" }] }),
   component: Tickets,
 });
 
@@ -117,7 +117,11 @@ function TicketStatusSelect({
       onValueChange={(v) => onChange(ticketId, v as TicketStatus)}
     >
       <SelectTrigger
-        className={compact ? "h-8 w-[140px] text-xs border-border/60" : "h-9 border-none bg-muted/40 hover:bg-muted/60 transition focus:ring-0 focus:ring-offset-0 px-3"}
+        className={
+          compact
+            ? "h-8 w-[140px] text-xs border-border/60"
+            : "h-9 border-none bg-muted/40 hover:bg-muted/60 transition focus:ring-0 focus:ring-offset-0 px-3"
+        }
         onClick={(e) => e.stopPropagation()}
       >
         <SelectValue />
@@ -459,7 +463,10 @@ function Tickets() {
         </DialogContent>
       </Dialog>
 
-      <TableCard scrollLabel="Support tickets" className="border border-border/60 shadow-sm rounded-xl">
+      <TableCard
+        scrollLabel="Support tickets"
+        className="border border-border/60 shadow-sm rounded-xl"
+      >
         {listError ? (
           <AuthStatusBanner
             error={formatListQueryError(listErrorDetail)}
@@ -511,21 +518,24 @@ function Tickets() {
                   <td className="px-4 py-3.5 font-mono text-xs font-semibold text-primary">
                     <div className="flex items-center gap-2">
                       {/* Priority left line in table too! */}
-                      <span className={`w-1.5 h-4 rounded-full ${
-                        t.priority === "Critical" ? "bg-rose-500" :
-                        t.priority === "High" ? "bg-amber-500" :
-                        t.priority === "Medium" ? "bg-blue-500" : "bg-zinc-400"
-                      }`} />
+                      <span
+                        className={`w-1.5 h-4 rounded-full ${
+                          t.priority === "Critical"
+                            ? "bg-rose-500"
+                            : t.priority === "High"
+                              ? "bg-amber-500"
+                              : t.priority === "Medium"
+                                ? "bg-blue-500"
+                                : "bg-zinc-400"
+                        }`}
+                      />
                       {t.id}
                     </div>
                   </td>
                   <td className="px-4 py-3.5 font-medium text-foreground">{t.title}</td>
                   <td className="px-4 py-3.5" onClick={(e) => e.stopPropagation()}>
                     {t.assetId ? (
-                      <TicketAssetLink
-                        assetId={t.assetId}
-                        onClick={(e) => e.stopPropagation()}
-                      />
+                      <TicketAssetLink assetId={t.assetId} onClick={(e) => e.stopPropagation()} />
                     ) : (
                       <span className="text-muted-foreground text-xs">—</span>
                     )}
@@ -547,7 +557,9 @@ function Tickets() {
                     )}
                   </td>
                   <td className="px-4 py-3.5 text-foreground/80">{t.assigneeName ?? "—"}</td>
-                  <td className="px-4 py-3.5 text-muted-foreground font-medium text-xs">{slaLabel(t)}</td>
+                  <td className="px-4 py-3.5 text-muted-foreground font-medium text-xs">
+                    {slaLabel(t)}
+                  </td>
                   <td className="px-4 py-3.5 text-muted-foreground text-xs">
                     {formatDistanceToNow(new Date(t.updatedAt), { addSuffix: true })}
                   </td>
@@ -580,11 +592,13 @@ function Tickets() {
                     {detail.id}
                   </span>
                   <div className="flex gap-2">
-                    <StatusPill tone={ticketPriorityTone(detail.priority)}>{detail.priority}</StatusPill>
+                    <StatusPill tone={ticketPriorityTone(detail.priority)}>
+                      {detail.priority}
+                    </StatusPill>
                     <StatusPill tone={ticketStatusTone(detail.status)}>{detail.status}</StatusPill>
                   </div>
                 </div>
-                
+
                 <h3 className="text-xl font-bold text-foreground leading-tight tracking-tight">
                   {detail.title}
                 </h3>
@@ -672,7 +686,10 @@ function Tickets() {
 
                 <div className="flex-1 overflow-y-auto p-6 min-h-0 bg-background/50">
                   {/* Tab Content: Comments */}
-                  <TabsContent value="comments" className="mt-0 h-full flex flex-col gap-6 outline-none">
+                  <TabsContent
+                    value="comments"
+                    className="mt-0 h-full flex flex-col gap-6 outline-none"
+                  >
                     <div className="flex-1 space-y-4 pr-1">
                       {detail.messages.length === 0 ? (
                         <div className="text-center py-12 text-muted-foreground text-sm">
@@ -686,7 +703,9 @@ function Tickets() {
                             </div>
                             <div className="flex-1 bg-muted/40 hover:bg-muted/50 border border-border/40 rounded-2xl p-4 transition duration-200">
                               <div className="flex items-center justify-between">
-                                <span className="text-xs font-bold text-foreground">{m.author}</span>
+                                <span className="text-xs font-bold text-foreground">
+                                  {m.author}
+                                </span>
                                 <span className="text-[10px] text-muted-foreground">
                                   {formatDistanceToNow(new Date(m.createdAt), { addSuffix: true })}
                                 </span>
@@ -704,7 +723,10 @@ function Tickets() {
                     <div className="mt-auto border border-border/60 rounded-2xl p-4 bg-muted/10 backdrop-blur-sm shadow-sm space-y-3">
                       <div className="grid gap-2 grid-cols-2">
                         <div className="space-y-1">
-                          <Label htmlFor="c-auth" className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          <Label
+                            htmlFor="c-auth"
+                            className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"
+                          >
                             Your Name
                           </Label>
                           <Input
@@ -717,9 +739,12 @@ function Tickets() {
                           />
                         </div>
                       </div>
-                      
+
                       <div className="space-y-1">
-                        <Label htmlFor="c-body" className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        <Label
+                          htmlFor="c-body"
+                          className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"
+                        >
                           Comment Body
                         </Label>
                         <Textarea
@@ -735,7 +760,9 @@ function Tickets() {
 
                       <div className="flex items-center justify-end pt-1">
                         {detailLocked ? (
-                          <span className="text-xs text-muted-foreground mr-auto">Comments locked</span>
+                          <span className="text-xs text-muted-foreground mr-auto">
+                            Comments locked
+                          </span>
                         ) : null}
                         <Button
                           type="button"
@@ -778,7 +805,8 @@ function Tickets() {
                             IT Management & Meta Fields
                           </h4>
                           <p className="text-xs text-muted-foreground">
-                            Edit details to link inventory items, adjust priorities, or reassign the incident.
+                            Edit details to link inventory items, adjust priorities, or reassign the
+                            incident.
                           </p>
                         </div>
 
@@ -882,7 +910,9 @@ function Tickets() {
                         <div className="flex justify-end pt-4 border-t border-border/60">
                           <Button
                             type="button"
-                            disabled={updateDetailsMut.isPending || !editTitle.trim() || !detailsDirty}
+                            disabled={
+                              updateDetailsMut.isPending || !editTitle.trim() || !detailsDirty
+                            }
                             className="gap-2 shadow-sm px-5"
                             onClick={() => updateDetailsMut.mutate()}
                           >
@@ -906,10 +936,9 @@ function Tickets() {
                           {detailLocked ? "Ticket Details Locked" : "Read-Only Access"}
                         </p>
                         <p className="text-xs text-muted-foreground max-w-xs mx-auto">
-                          {detailLocked 
+                          {detailLocked
                             ? "This ticket has been closed. Reopen or adjust status to enable editing."
-                            : "You do not have administrative write permissions to edit metadata fields."
-                          }
+                            : "You do not have administrative write permissions to edit metadata fields."}
                         </p>
                       </div>
                     )}

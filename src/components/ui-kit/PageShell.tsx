@@ -25,10 +25,7 @@ export function PageShell({
   children: ReactNode;
 }) {
   return (
-    <div
-      className={`p-8 mx-auto w-full ${variantClass[variant]} ${className}`.trim()}
-      {...props}
-    >
+    <div className={`p-8 mx-auto w-full ${variantClass[variant]} ${className}`.trim()} {...props}>
       {children}
     </div>
   );

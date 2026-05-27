@@ -6,4 +6,10 @@ const { loadAllAssets } = await import("../src/utils/assets-source.server.ts");
 console.log("adminConfigured", isFirebaseAdminConfigured());
 const assets = await loadAllAssets();
 console.log("assetCount", assets.length);
-console.log("sample", assets.slice(0, 3).map((a) => a.id).join(", "));
+console.log(
+  "sample",
+  assets
+    .slice(0, 3)
+    .map((a) => a.id)
+    .join(", "),
+);

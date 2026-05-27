@@ -11,7 +11,11 @@ export function ListPageSkeleton({
   className?: string;
 }) {
   return (
-    <Card className={`overflow-hidden p-4 ${className}`.trim()} aria-busy="true" aria-label="Loading">
+    <Card
+      className={`overflow-hidden p-4 ${className}`.trim()}
+      aria-busy="true"
+      aria-label="Loading"
+    >
       <div className="space-y-3">
         <div className="flex gap-3 pb-2 border-b border-border">
           {Array.from({ length: columns }).map((_, i) => (

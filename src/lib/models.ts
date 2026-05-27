@@ -1,7 +1,18 @@
 import { z } from "zod";
+import { DEPARTMENT_OPTIONS, normalizeDepartment } from "./departments";
 
 export const AssetStatusSchema = z.enum(["Active", "In Repair", "Available", "Lost", "Retired"]);
 export type AssetStatus = z.infer<typeof AssetStatusSchema>;
+
+export const DepartmentSchema = z.preprocess(
+  (value) => {
+    if (typeof value !== "string") return value;
+    return normalizeDepartment(value) ?? value;
+  },
+  // `z.enum` needs a tuple type; `DEPARTMENT_OPTIONS` is a non-empty const tuple.
+  z.enum(DEPARTMENT_OPTIONS as unknown as [string, ...string[]]),
+);
+export type Department = z.infer<typeof DepartmentSchema>;
 
 export const ASSET_CATEGORY_VALUES = [
   "Laptop",
@@ -43,7 +54,7 @@ const AssetRecordSchema = z.object({
   name: z.string().min(1),
   category: AssetCategorySchema,
   assignedTo: z.string().nullable(),
-  department: z.string().nullable(),
+  department: DepartmentSchema.nullable(),
   status: AssetStatusSchema,
   warrantyUntil: z.string().nullable(),
   lastServiceAt: z.string().nullable(),
@@ -82,7 +93,7 @@ export const AssetListQuerySchema = z.object({
   q: z.string().optional(),
   status: AssetStatusSchema.optional(),
   category: AssetCategorySchema.optional(),
-  department: z.string().optional(),
+  department: DepartmentSchema.optional(),
   warrantyBand: WarrantyBandSchema.optional(),
   limit: z.number().int().min(1).max(500).optional(),
   offset: z.number().int().min(0).optional(),
@@ -327,7 +338,7 @@ export const EmployeeSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1),
   role: z.string().min(1),
-  department: z.string().min(1),
+  department: DepartmentSchema,
   email: z.string().email(),
   assetCount: z.number().int().min(0),
 });
@@ -335,7 +346,7 @@ export type Employee = z.infer<typeof EmployeeSchema>;
 
 export const EmployeeListQuerySchema = z.object({
   q: z.string().optional(),
-  department: z.string().optional(),
+  department: DepartmentSchema.optional(),
   limit: z.number().int().min(1).max(500).optional(),
   offset: z.number().int().min(0).optional(),
 });

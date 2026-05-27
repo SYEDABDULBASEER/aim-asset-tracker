@@ -3,7 +3,7 @@ import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { USER_HOME_PATH } from "@/lib/auth/routing";
 
 export const Route = createFileRoute("/user/login")({
-  head: () => ({ meta: [{ title: "Employee portal — Asset Desk" }] }),
+  head: () => ({ meta: [{ title: "Employee portal — AssetSphere" }] }),
   component: UserLoginRedirect,
 });
 

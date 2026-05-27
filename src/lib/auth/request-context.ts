@@ -14,8 +14,13 @@ export type RequestContext = {
 const STORAGE_SYMBOL = Symbol.for("assetdesk.requestContextStorage");
 const FALLBACK_SYMBOL = Symbol.for("assetdesk.requestContextFallback");
 
+type RequestContextGlobal = typeof globalThis & {
+  [STORAGE_SYMBOL]?: AsyncLocalStorage<RequestContext>;
+  [FALLBACK_SYMBOL]?: RequestContext | null;
+};
+
 const storage: AsyncLocalStorage<RequestContext> = (() => {
-  const g = globalThis as any;
+  const g = globalThis as RequestContextGlobal;
   if (!g[STORAGE_SYMBOL]) {
     g[STORAGE_SYMBOL] = new AsyncLocalStorage<RequestContext>();
   }
@@ -28,11 +33,11 @@ const storage: AsyncLocalStorage<RequestContext> = (() => {
  * This is safe for single-request-at-a-time dev servers.
  */
 function getFallbackContext(): RequestContext | null {
-  return (globalThis as any)[FALLBACK_SYMBOL] ?? null;
+  return (globalThis as RequestContextGlobal)[FALLBACK_SYMBOL] ?? null;
 }
 
 function setFallbackContext(ctx: RequestContext | null): void {
-  (globalThis as any)[FALLBACK_SYMBOL] = ctx;
+  (globalThis as RequestContextGlobal)[FALLBACK_SYMBOL] = ctx;
 }
 
 export function runWithRequestContext<T>(context: RequestContext, fn: () => T): T {

@@ -15,8 +15,7 @@ function remainingBookValuePercent(purchaseDate: string, asOf: Date): number | n
   const purchased = new Date(purchaseDate);
   if (Number.isNaN(purchased.getTime())) return null;
   const ageMonths =
-    (asOf.getFullYear() - purchased.getFullYear()) * 12 +
-    (asOf.getMonth() - purchased.getMonth());
+    (asOf.getFullYear() - purchased.getFullYear()) * 12 + (asOf.getMonth() - purchased.getMonth());
   if (ageMonths < 0) return 100;
   return Math.max(0, Math.round((1 - ageMonths / DEPRECIATION_MONTHS) * 100));
 }

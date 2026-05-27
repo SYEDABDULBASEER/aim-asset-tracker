@@ -3,10 +3,7 @@ import { z } from "zod";
 import { appendAuditLog } from "@/lib/audit/write-audit";
 import { requireRead, requireWrite } from "@/lib/auth/require-auth";
 import { shouldUseInMemoryStore } from "@/lib/firebase/production-persistence";
-import {
-  firestoreGetAssetById,
-  firestoreUpsertAsset,
-} from "@/lib/firebase/assets.firestore";
+import { firestoreGetAssetById, firestoreUpsertAsset } from "@/lib/firebase/assets.firestore";
 import { firestoreGetEmployeeById } from "@/lib/firebase/employees.firestore";
 import {
   firestoreGetTransferById,

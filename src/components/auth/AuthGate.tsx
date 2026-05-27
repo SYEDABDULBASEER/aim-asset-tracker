@@ -16,8 +16,7 @@ export function AuthGate() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   const protect = isItStaffAuthEnforced();
-  const isPublicOrPortal =
-    isPublicFullPagePath(pathname) || isUserPortalPath(pathname);
+  const isPublicOrPortal = isPublicFullPagePath(pathname) || isUserPortalPath(pathname);
 
   useEffect(() => {
     if (!protect) return;

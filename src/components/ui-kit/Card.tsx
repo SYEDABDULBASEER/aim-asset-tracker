@@ -1,4 +1,4 @@
-import type { HTMLAttributes } from "react";
+import type { HTMLAttributes, ReactNode } from "react";
 
 export function Card({ className = "", ...props }: HTMLAttributes<HTMLDivElement>) {
   return (
@@ -40,7 +40,7 @@ export function PageHeader({
   centered = false,
 }: {
   title: string;
-  subtitle?: string;
+  subtitle?: ReactNode;
   action?: React.ReactNode;
   /** Center title/subtitle (employee portal landing, public report page). */
   centered?: boolean;

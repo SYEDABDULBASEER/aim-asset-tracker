@@ -11,6 +11,7 @@ import { useAuth, useAuthQueryEnabled } from "@/lib/auth/AuthProvider";
 import { formatAppRoleLabel } from "@/lib/auth/roles";
 import { callAuthenticatedServerFn } from "@/lib/auth/authenticated-server-fn";
 import { getNotificationFeed, type NotificationFeedItem } from "@/utils/notifications.functions";
+import { AppBrandName } from "@/components/brand/AppBrandName";
 
 const NOTIFY_ACK_STORAGE_KEY = "assetdesk.topbarNotificationsAckAt";
 
@@ -229,22 +230,26 @@ export function Topbar() {
             {sessionInitials(auth)}
           </div>
           <div className="hidden sm:block text-left leading-tight min-w-0 flex-1">
-            <div className="text-xs font-medium truncate">Asset Desk</div>
-            <div className="text-[10px] text-muted-foreground truncate" title={sessionSubtitle(auth)}>
+            <AppBrandName className="text-xs font-medium truncate block" />
+            <div
+              className="text-[10px] text-muted-foreground truncate"
+              title={sessionSubtitle(auth)}
+            >
               {sessionSubtitle(auth)}
             </div>
           </div>
           {auth.authRequired && auth.user ? (
             <Button
               type="button"
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 shrink-0"
-              title="Sign out"
-              aria-label="Sign out"
+              variant="default"
+              size="sm"
+              className="h-8 shrink-0 rounded-full px-3 shadow-sm hover:shadow transition-shadow"
+              title="Logout"
+              aria-label="Logout"
               onClick={() => void auth.signOut()}
             >
               <LogOut className="h-4 w-4" />
+              <span className="hidden sm:inline">Logout</span>
             </Button>
           ) : null}
         </div>

@@ -6,7 +6,7 @@ export function buildSeedEmployees(): Employee[] {
     id: `EMP-${String(index + 1).padStart(3, "0")}`,
     name: row.name,
     role: "Staff",
-    department: "Operations",
+    department: "operations",
     email: rosterEmail(row.name, index + 1),
     assetCount: countRosterAssetsForName(row.name),
   }));

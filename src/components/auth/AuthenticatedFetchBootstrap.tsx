@@ -1,5 +1,8 @@
 import { useEffect } from "react";
-import { useAuthenticatedServerFetch, installAuthenticatedServerFetch } from "@/lib/auth/server-fn-client";
+import {
+  useAuthenticatedServerFetch,
+  installAuthenticatedServerFetch,
+} from "@/lib/auth/server-fn-client";
 
 /** Patch `fetch` before the first paint so server functions are never issued without auth headers. */
 if (typeof window !== "undefined") {

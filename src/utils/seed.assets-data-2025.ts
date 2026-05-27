@@ -20,7 +20,8 @@ export function buildAssetsData2025(): Asset[] {
       serial: "1",
       location: "Desk-04",
       purchaseDate: null,
-      specifications: "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
+      specifications:
+        "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
     },
     {
       id: "PC-A02",
@@ -34,7 +35,8 @@ export function buildAssetsData2025(): Asset[] {
       serial: "2",
       location: "Desk-06",
       purchaseDate: null,
-      specifications: "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
+      specifications:
+        "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
     },
     {
       id: "PC-A03",
@@ -48,7 +50,8 @@ export function buildAssetsData2025(): Asset[] {
       serial: "3",
       location: "Desk-01",
       purchaseDate: null,
-      specifications: "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
+      specifications:
+        "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
     },
     {
       id: "PC-A04",
@@ -62,7 +65,8 @@ export function buildAssetsData2025(): Asset[] {
       serial: "4",
       location: "Desk-02",
       purchaseDate: null,
-      specifications: "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
+      specifications:
+        "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
     },
     {
       id: "PC-A05",
@@ -76,7 +80,8 @@ export function buildAssetsData2025(): Asset[] {
       serial: "5",
       location: "Desk-08",
       purchaseDate: null,
-      specifications: "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
+      specifications:
+        "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
     },
     {
       id: "PC-B01",
@@ -90,7 +95,8 @@ export function buildAssetsData2025(): Asset[] {
       serial: "6",
       location: "Desk(S)-34",
       purchaseDate: null,
-      specifications: "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
+      specifications:
+        "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
     },
     {
       id: "PC-B02",
@@ -104,7 +110,8 @@ export function buildAssetsData2025(): Asset[] {
       serial: "7",
       location: "Desk-27",
       purchaseDate: null,
-      specifications: "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
+      specifications:
+        "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
     },
     {
       id: "PC-C01",
@@ -118,7 +125,8 @@ export function buildAssetsData2025(): Asset[] {
       serial: "8",
       location: "Desk-05",
       purchaseDate: null,
-      specifications: "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
+      specifications:
+        "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
     },
     {
       id: "PC-C02",
@@ -132,7 +140,8 @@ export function buildAssetsData2025(): Asset[] {
       serial: "9",
       location: "Desk-03",
       purchaseDate: null,
-      specifications: "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
+      specifications:
+        "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
     },
     {
       id: "PC-C03",
@@ -146,7 +155,8 @@ export function buildAssetsData2025(): Asset[] {
       serial: "10",
       location: "Desk-16",
       purchaseDate: null,
-      specifications: "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
+      specifications:
+        "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
     },
     {
       id: "PC-C04",
@@ -160,7 +170,8 @@ export function buildAssetsData2025(): Asset[] {
       serial: "11",
       location: "Desk-17",
       purchaseDate: null,
-      specifications: "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
+      specifications:
+        "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
     },
     {
       id: "PC-C05",
@@ -174,7 +185,8 @@ export function buildAssetsData2025(): Asset[] {
       serial: "12",
       location: "Desk-18",
       purchaseDate: null,
-      specifications: "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
+      specifications:
+        "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
     },
     {
       id: "PC-C06",
@@ -188,7 +200,8 @@ export function buildAssetsData2025(): Asset[] {
       serial: "13",
       location: "Desk-13",
       purchaseDate: null,
-      specifications: "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
+      specifications:
+        "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
     },
     {
       id: "PC-C07",
@@ -202,7 +215,8 @@ export function buildAssetsData2025(): Asset[] {
       serial: "14",
       location: "Desk-14",
       purchaseDate: null,
-      specifications: "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
+      specifications:
+        "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
     },
     {
       id: "PC-C08",
@@ -216,7 +230,8 @@ export function buildAssetsData2025(): Asset[] {
       serial: "15",
       location: "Desk-15",
       purchaseDate: null,
-      specifications: "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
+      specifications:
+        "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
     },
     {
       id: "PC-C09",
@@ -230,7 +245,8 @@ export function buildAssetsData2025(): Asset[] {
       serial: "16",
       location: "Desk-10",
       purchaseDate: null,
-      specifications: "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
+      specifications:
+        "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
     },
     {
       id: "PC-C10",
@@ -244,7 +260,8 @@ export function buildAssetsData2025(): Asset[] {
       serial: "17",
       location: "Desk-11",
       purchaseDate: null,
-      specifications: "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
+      specifications:
+        "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
     },
     {
       id: "PC-C11",
@@ -258,7 +275,8 @@ export function buildAssetsData2025(): Asset[] {
       serial: "18",
       location: "Desk-12",
       purchaseDate: null,
-      specifications: "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
+      specifications:
+        "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
     },
     {
       id: "PC-C12",
@@ -272,7 +290,8 @@ export function buildAssetsData2025(): Asset[] {
       serial: "19",
       location: "Desk-09",
       purchaseDate: null,
-      specifications: "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
+      specifications:
+        "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
     },
     {
       id: "PC-C13",
@@ -286,7 +305,8 @@ export function buildAssetsData2025(): Asset[] {
       serial: "20",
       location: "Desk-07",
       purchaseDate: null,
-      specifications: "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
+      specifications:
+        "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
     },
     {
       id: "PC-C14",
@@ -300,7 +320,8 @@ export function buildAssetsData2025(): Asset[] {
       serial: "21",
       location: "Desk-21",
       purchaseDate: null,
-      specifications: "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
+      specifications:
+        "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
     },
     {
       id: "PC-C15",
@@ -314,7 +335,8 @@ export function buildAssetsData2025(): Asset[] {
       serial: "22",
       location: "Desk-20",
       purchaseDate: null,
-      specifications: "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
+      specifications:
+        "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
     },
     {
       id: "PC-C16",
@@ -328,7 +350,8 @@ export function buildAssetsData2025(): Asset[] {
       serial: "23",
       location: "Desk-19",
       purchaseDate: null,
-      specifications: "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
+      specifications:
+        "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
     },
     {
       id: "PC-C17",
@@ -342,7 +365,8 @@ export function buildAssetsData2025(): Asset[] {
       serial: "24",
       location: "Desk-22",
       purchaseDate: null,
-      specifications: "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
+      specifications:
+        "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
     },
     {
       id: "PC-C18",
@@ -356,7 +380,8 @@ export function buildAssetsData2025(): Asset[] {
       serial: "25",
       location: "Desk-23",
       purchaseDate: null,
-      specifications: "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
+      specifications:
+        "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
     },
     {
       id: "PC-C19",
@@ -370,7 +395,8 @@ export function buildAssetsData2025(): Asset[] {
       serial: "26",
       location: "Desk-24",
       purchaseDate: null,
-      specifications: "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
+      specifications:
+        "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
     },
     {
       id: "PC-C20",
@@ -384,7 +410,8 @@ export function buildAssetsData2025(): Asset[] {
       serial: "27",
       location: "Desk-28",
       purchaseDate: null,
-      specifications: "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
+      specifications:
+        "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
     },
     {
       id: "PC-C21",
@@ -398,7 +425,8 @@ export function buildAssetsData2025(): Asset[] {
       serial: "28",
       location: "Desk-29",
       purchaseDate: null,
-      specifications: "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
+      specifications:
+        "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
     },
     {
       id: "PC-C22",
@@ -412,7 +440,8 @@ export function buildAssetsData2025(): Asset[] {
       serial: "29",
       location: "Desk-26",
       purchaseDate: null,
-      specifications: "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
+      specifications:
+        "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
     },
     {
       id: "PC-C23",
@@ -426,7 +455,8 @@ export function buildAssetsData2025(): Asset[] {
       serial: "30",
       location: "Desk-25",
       purchaseDate: null,
-      specifications: "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
+      specifications:
+        "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
     },
     {
       id: "PC-C24",
@@ -440,7 +470,8 @@ export function buildAssetsData2025(): Asset[] {
       serial: "31",
       location: "Desk-00",
       purchaseDate: null,
-      specifications: "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
+      specifications:
+        "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
     },
     {
       id: "PC-C25",
@@ -454,7 +485,8 @@ export function buildAssetsData2025(): Asset[] {
       serial: "32",
       location: "Desk(S)-35",
       purchaseDate: null,
-      specifications: "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
+      specifications:
+        "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
     },
     {
       id: "PC-C26",
@@ -468,7 +500,8 @@ export function buildAssetsData2025(): Asset[] {
       serial: "33",
       location: "Desk-31",
       purchaseDate: null,
-      specifications: "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
+      specifications:
+        "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
     },
     {
       id: "PC-C27",
@@ -482,7 +515,8 @@ export function buildAssetsData2025(): Asset[] {
       serial: "34",
       location: "Desk-30",
       purchaseDate: null,
-      specifications: "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
+      specifications:
+        "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
     },
     {
       id: "PC-C28",
@@ -496,7 +530,8 @@ export function buildAssetsData2025(): Asset[] {
       serial: "35",
       location: "Desk(S)-32",
       purchaseDate: null,
-      specifications: "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
+      specifications:
+        "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
     },
     {
       id: "PC-C29",
@@ -510,7 +545,8 @@ export function buildAssetsData2025(): Asset[] {
       serial: "36",
       location: "Desk(S)-33",
       purchaseDate: null,
-      specifications: "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
+      specifications:
+        "Accessories: Net Speed, Cables, Keyboard, Mouse; Softwares: Revit 2024 and plugins, Navis 2024 and plugins, CAD,Excel, PDF Editor,Teams",
     },
   ];
 }

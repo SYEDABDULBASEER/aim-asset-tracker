@@ -8,6 +8,12 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
+
+# Python virtual environments
+.venv/
+.venv*/
+venv/
+
 dist
 dist-ssr
 .output
@@ -35,3 +41,10 @@ firebase-service-account.json
 *.njsproj
 *.sln
 *.sw?
+
+# Test artifacts
+coverage/
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/

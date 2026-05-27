@@ -33,10 +33,7 @@ import { callAuthenticatedServerFn } from "@/lib/auth/authenticated-server-fn";
 import { useIsAdmin } from "@/lib/auth/AuthProvider";
 import { destructiveAlertActionClass, destructiveIconButtonClass } from "@/lib/ui/button-hierarchy";
 import { isFirebaseConfigured } from "@/lib/firebase/env";
-import {
-  listAssetDocuments,
-  uploadAssetDocument,
-} from "@/lib/firebase/asset-documents.storage";
+import { listAssetDocuments, uploadAssetDocument } from "@/lib/firebase/asset-documents.storage";
 import { format } from "date-fns";
 import {
   deleteAsset,
@@ -53,7 +50,7 @@ import {
 import { getAssetSpecificationLines } from "@/lib/book1-inventory";
 
 export const Route = createFileRoute("/admin/assets/$id")({
-  head: () => ({ meta: [{ title: "Asset Detail — Asset Desk" }] }),
+  head: () => ({ meta: [{ title: "Asset Detail — AssetSphere" }] }),
   component: AssetDetail,
 });
 
@@ -282,14 +279,10 @@ function AssetDetail() {
                 <Field label="Asset ID" value={asset?.id ?? "—"} />
                 <Field label="S No" value={asset?.serial ?? "—"} />
                 <Field label="Name" value={asset?.name ?? "—"} />
-                <Field label="Desk" value={asset?.location ?? "—"} />
+                <Field label="Desk no" value={asset?.location ?? "—"} />
                 <Field
                   label="Accessories & Softwares"
-                  value={
-                    asset
-                      ? getAssetSpecificationLines(asset).join(" · ") || "—"
-                      : "—"
-                  }
+                  value={asset ? getAssetSpecificationLines(asset).join(" · ") || "—" : "—"}
                 />
               </div>
             </div>

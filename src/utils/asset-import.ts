@@ -4,7 +4,13 @@ import { ASSET_CATEGORY_VALUES } from "@/lib/models";
 import { parseCsvText } from "@/utils/csv";
 
 const CATEGORY_OPTIONS = ASSET_CATEGORY_VALUES;
-const STATUS_OPTIONS = ["Active", "In Repair", "Available", "Lost", "Retired"] as const satisfies readonly AssetStatus[];
+const STATUS_OPTIONS = [
+  "Active",
+  "In Repair",
+  "Available",
+  "Lost",
+  "Retired",
+] as const satisfies readonly AssetStatus[];
 
 const HEADER_ALIASES: Record<string, keyof AssetFormValues> = {
   id: "id",
@@ -31,7 +37,10 @@ const HEADER_ALIASES: Record<string, keyof AssetFormValues> = {
 };
 
 function normalizeHeader(header: string): string {
-  return header.trim().toLowerCase().replace(/[^a-z0-9]/g, "");
+  return header
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
 }
 
 function normalizeCategory(value: string): AssetCategory {

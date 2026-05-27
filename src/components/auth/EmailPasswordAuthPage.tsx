@@ -1,5 +1,6 @@
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
-import { Boxes, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import { AppLogo } from "@/components/brand/AppLogo";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Card } from "@/components/ui-kit/Card";
@@ -9,8 +10,9 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { formatAuthFormError } from "@/lib/auth/form-errors";
 import { LANDING_PATH, resolveStaffLoginRedirect } from "@/lib/auth/routing";
+import { AppBrandName } from "@/components/brand/AppBrandName";
+import { AppTagline } from "@/components/brand/AppTagline";
 import { AuthSessionCard } from "@/components/auth/AuthSessionCard";
-import { firebaseAuthRequired } from "@/lib/firebase/env";
 
 /** IT staff sign-in only. The employee portal does not use accounts. */
 export function StaffLoginPage() {
@@ -21,8 +23,6 @@ export function StaffLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
-
-  const authRequired = firebaseAuthRequired();
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -48,14 +48,14 @@ export function StaffLoginPage() {
     >
       <Link
         to={LANDING_PATH}
-        className="flex items-center gap-2.5 mb-8 hover:opacity-90 transition-opacity"
+        className="flex flex-col items-center gap-3 mb-8 hover:opacity-90 transition-opacity text-center"
       >
-        <div className="h-11 w-11 rounded-xl bg-primary/15 flex items-center justify-center">
-          <Boxes className="h-6 w-6 text-primary" />
-        </div>
+        <AppLogo className="h-14 w-auto max-w-[min(100%,280px)]" />
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">Asset Desk</h1>
-          <p className="text-sm text-muted-foreground">EClickTech Solutions</p>
+          <h1 className="text-xl font-semibold tracking-tight">
+            <AppBrandName />
+          </h1>
+          <AppTagline className="max-w-sm" />
         </div>
       </Link>
 
@@ -63,24 +63,6 @@ export function StaffLoginPage() {
 
       <Card className="w-full max-w-md p-6">
         <h2 className="text-lg font-semibold">Sign in — IT staff</h2>
-
-        <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-          Only authorized IT accounts can access the workspace. Users are created in Firebase Console
-          (or by your administrator); roles are assigned with{" "}
-          <code className="text-[11px] bg-muted px-1 rounded">npm run auth:set-role</code>. After a
-          role change, use <strong className="font-medium text-foreground">Sign out</strong> then sign
-          in again so your session picks up the new role.
-        </p>
-
-        {authRequired ? (
-          <p className="text-[11px] text-muted-foreground mt-2 rounded-md bg-muted/50 px-2 py-1.5">
-            Public sign-up is disabled. Request access from your IT administrator.
-          </p>
-        ) : (
-          <p className="text-[11px] text-amber-900/90 dark:text-amber-100/90 mt-2 rounded-md bg-amber-500/15 px-2 py-1.5">
-            Demo / open mode: configure Firebase and enforce auth for production.
-          </p>
-        )}
 
         <form
           onSubmit={(e) => void handleSubmit(e)}

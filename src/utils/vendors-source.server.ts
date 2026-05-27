@@ -1,4 +1,7 @@
-import { shouldUseInMemoryStore, requireProductionPersistence } from "@/lib/firebase/production-persistence";
+import {
+  shouldUseInMemoryStore,
+  requireProductionPersistence,
+} from "@/lib/firebase/production-persistence";
 import type { Vendor } from "@/lib/models";
 import { firestoreListAllVendors } from "@/lib/firebase/vendors.firestore";
 import { getStore } from "./store.server";
