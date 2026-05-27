@@ -52,7 +52,7 @@ export const Route = createFileRoute("/admin/assets")({
   validateSearch: (search: Record<string, unknown>) => ({
     q: typeof search.q === "string" ? search.q : undefined,
   }),
-  head: () => ({ meta: [{ title: "Assets — Asset Desk" }] }),
+  head: () => ({ meta: [{ title: "Assets — AssetSphere" }] }),
   component: AssetsPage,
 });
 

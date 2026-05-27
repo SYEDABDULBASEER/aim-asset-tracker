@@ -53,7 +53,7 @@ import {
 import { getAssetSpecificationLines } from "@/lib/book1-inventory";
 
 export const Route = createFileRoute("/admin/assets/$id")({
-  head: () => ({ meta: [{ title: "Asset Detail — Asset Desk" }] }),
+  head: () => ({ meta: [{ title: "Asset Detail — AssetSphere" }] }),
   component: AssetDetail,
 });
 

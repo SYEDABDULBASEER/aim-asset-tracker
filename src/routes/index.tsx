@@ -1,11 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Boxes, LifeBuoy, LayoutDashboard } from "lucide-react";
+import { LifeBuoy, LayoutDashboard } from "lucide-react";
+import { AppLogo } from "@/components/brand/AppLogo";
 import { Card } from "@/components/ui-kit/Card";
 import { LandingStaffSessionStrip } from "@/components/auth/LandingStaffSessionStrip";
 import { ADMIN_HOME_PATH, STAFF_LOGIN_PATH, USER_HOME_PATH } from "@/lib/auth/routing";
+import { AppBrandName } from "@/components/brand/AppBrandName";
+import { AppTagline } from "@/components/brand/AppTagline";
+import { pageTitle } from "@/lib/branding";
 
 export const Route = createFileRoute("/")({
-  head: () => ({ meta: [{ title: "Asset Desk" }] }),
+  head: () => ({ meta: [{ title: pageTitle("Home") }] }),
   component: HomeChooserPage,
 });
 
@@ -13,10 +17,11 @@ function HomeChooserPage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-muted/30 px-4 py-12">
       <div className="text-center mb-10 max-w-md">
-        <div className="h-14 w-14 rounded-2xl bg-primary/15 flex items-center justify-center mx-auto mb-4">
-          <Boxes className="h-7 w-7 text-primary" />
-        </div>
-        <h1 className="text-2xl font-bold tracking-tight">Enterprise Asset Desk</h1>
+        <AppLogo className="h-16 w-auto max-w-[280px] mx-auto mb-4" />
+        <h1 className="text-2xl font-bold tracking-tight">
+          <AppBrandName />
+        </h1>
+        <AppTagline className="mt-2" />
         <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
           Choose how you want to use the application.
         </p>
@@ -49,8 +54,8 @@ function HomeChooserPage() {
               IT admin workspace
             </h2>
             <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-              Manage assets, tickets, maintenance, and reports. Requires IT sign-in at{" "}
-              <span className="text-foreground font-medium">/login</span> (Firebase account).
+              Your operations hub for inventory, service desk, maintenance planning, and analytics —
+              secure access for authorized IT staff.
             </p>
           </Card>
         </Link>

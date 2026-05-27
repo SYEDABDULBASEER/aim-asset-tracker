@@ -20,9 +20,11 @@ import type { OrgSettings } from "@/lib/models";
 import { callAuthenticatedServerFn } from "@/lib/auth/authenticated-server-fn";
 import { listAuditLogs } from "@/utils/audit.functions";
 import { getOrgSettings, updateOrgSettings } from "@/utils/settings.functions";
+import { AppBrandName } from "@/components/brand/AppBrandName";
+import { pageTitle } from "@/lib/branding";
 
 export const Route = createFileRoute("/admin/settings")({
-  head: () => ({ meta: [{ title: "Settings — Asset Desk" }] }),
+  head: () => ({ meta: [{ title: pageTitle("Settings") }] }),
   component: Settings,
 });
 
@@ -103,7 +105,14 @@ function Settings() {
 
   return (
     <PageShell variant="narrow" className="space-y-6">
-      <PageHeader title="Settings" subtitle="Configure your Asset Desk workspace" />
+      <PageHeader
+        title="Settings"
+        subtitle={
+          <>
+            Configure your <AppBrandName className="font-medium" /> workspace
+          </>
+        }
+      />
 
       <Card className="p-6 space-y-5">
         <div>

@@ -13,7 +13,7 @@ import { getMyUserTicket } from "@/utils/tickets.functions";
 import { usePortalRequester } from "@/components/user/PortalRequesterProvider";
 
 export const Route = createFileRoute("/user/_portal/tickets/$id")({
-  head: ({ params }) => ({ meta: [{ title: `Ticket ${params.id} — Asset Desk` }] }),
+  head: ({ params }) => ({ meta: [{ title: `Ticket ${params.id} — AssetSphere` }] }),
   component: UserTicketDetailPage,
 });
 

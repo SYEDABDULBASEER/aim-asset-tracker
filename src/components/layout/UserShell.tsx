@@ -1,5 +1,6 @@
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
-import { Boxes, Home, LifeBuoy } from "lucide-react";
+import { Home, LifeBuoy } from "lucide-react";
+import { AppLogo } from "@/components/brand/AppLogo";
 import { USER_HOME_PATH, USER_REQUEST_SUPPORT_PATH } from "@/lib/auth/routing";
 import { usePortalRequester } from "@/components/user/PortalRequesterProvider";
 
@@ -16,9 +17,7 @@ export function UserShell() {
     <div className="min-h-screen flex flex-col bg-background text-foreground">
       <header className="h-16 shrink-0 border-b border-border bg-card flex items-center justify-between px-6">
         <Link to={USER_HOME_PATH} preload="intent" className="flex items-center gap-2.5">
-          <div className="h-9 w-9 rounded-lg bg-primary/15 flex items-center justify-center">
-            <Boxes className="h-5 w-5 text-primary" />
-          </div>
+          <AppLogo className="h-8 w-auto max-w-[100px] shrink-0" />
           <div className="leading-tight">
             <div className="text-sm font-semibold">Employee Support</div>
             <div className="text-[11px] text-muted-foreground">Raise & track tickets</div>

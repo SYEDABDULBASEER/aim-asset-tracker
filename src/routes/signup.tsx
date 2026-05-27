@@ -3,7 +3,7 @@ import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { STAFF_LOGIN_PATH } from "@/lib/auth/routing";
 
 export const Route = createFileRoute("/signup")({
-  head: () => ({ meta: [{ title: "Sign up — Asset Desk" }] }),
+  head: () => ({ meta: [{ title: "Sign up — AssetSphere" }] }),
   component: StaffSignupRedirect,
 });
 

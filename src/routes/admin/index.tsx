@@ -83,7 +83,7 @@ function saveSeenPortalPopupIds(seen: Set<string>) {
 }
 
 export const Route = createFileRoute("/admin/")({
-  head: () => ({ meta: [{ title: "Dashboard — Asset Desk" }] }),
+  head: () => ({ meta: [{ title: "Dashboard — AssetSphere" }] }),
   component: Dashboard,
 });
 

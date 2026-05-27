@@ -34,7 +34,7 @@ import { reportsHasExportableData } from "@/lib/reports/has-reports-data";
 import { exportReportsCsv, getReportsSummary } from "@/utils/reports.functions";
 
 export const Route = createFileRoute("/admin/reports")({
-  head: () => ({ meta: [{ title: "Reports — Asset Desk" }] }),
+  head: () => ({ meta: [{ title: "Reports — AssetSphere" }] }),
   component: Reports,
 });
 

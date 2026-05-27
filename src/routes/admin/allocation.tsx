@@ -45,7 +45,7 @@ export const Route = createFileRoute("/admin/allocation")({
   validateSearch: (search: Record<string, unknown>): AllocationSearch => ({
     assetId: typeof search.assetId === "string" ? search.assetId : undefined,
   }),
-  head: () => ({ meta: [{ title: "Asset Allocation — Asset Desk" }] }),
+  head: () => ({ meta: [{ title: "Asset Allocation — AssetSphere" }] }),
   component: Allocation,
 });
 

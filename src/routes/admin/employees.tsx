@@ -43,7 +43,7 @@ import {
 } from "@/utils/employees.functions";
 
 export const Route = createFileRoute("/admin/employees")({
-  head: () => ({ meta: [{ title: "Employees — Asset Desk" }] }),
+  head: () => ({ meta: [{ title: "Employees — AssetSphere" }] }),
   component: Employees,
 });
 

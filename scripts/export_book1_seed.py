@@ -3,17 +3,16 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import sys
 from openpyxl import load_workbook
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+
+from lib.book1_seed import display_name  # noqa: E402
+
 BOOK = ROOT / "Book1.xlsx"
 TARGET = ROOT / "src" / "utils" / "seed.book1.assets.ts"
-
-
-def display_name(name: str, variant: str | None) -> str:
-    if variant and variant.startswith("AIM_"):
-        return variant.replace("_", "-")
-    return name
 
 
 def main() -> None:

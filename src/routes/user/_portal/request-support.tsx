@@ -1,12 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Boxes } from "lucide-react";
+import { AppLogo } from "@/components/brand/AppLogo";
 import { PageHeader } from "@/components/ui-kit/Card";
 import { PageShell } from "@/components/ui-kit/PageShell";
 import { ADMIN_HOME_PATH, USER_HOME_PATH } from "@/lib/auth/routing";
 import { RaiseTicketForm } from "@/components/user/RaiseTicketForm";
 
 export const Route = createFileRoute("/user/_portal/request-support")({
-  head: () => ({ meta: [{ title: "Report an issue — Asset Desk" }] }),
+  head: () => ({ meta: [{ title: "Report an issue — AssetSphere" }] }),
   component: RequestSupportPage,
 });
 
@@ -14,9 +14,7 @@ function RequestSupportPage() {
   return (
     <PageShell variant="portal" className="space-y-8">
       <div className="flex justify-center">
-        <div className="h-12 w-12 rounded-xl bg-primary/15 flex items-center justify-center">
-          <Boxes className="h-6 w-6 text-primary" />
-        </div>
+        <AppLogo className="h-12 w-auto max-w-[200px]" />
       </div>
       <PageHeader
         centered

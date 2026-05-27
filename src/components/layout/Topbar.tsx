@@ -11,6 +11,7 @@ import { useAuth, useAuthQueryEnabled } from "@/lib/auth/AuthProvider";
 import { formatAppRoleLabel } from "@/lib/auth/roles";
 import { callAuthenticatedServerFn } from "@/lib/auth/authenticated-server-fn";
 import { getNotificationFeed, type NotificationFeedItem } from "@/utils/notifications.functions";
+import { AppBrandName } from "@/components/brand/AppBrandName";
 
 const NOTIFY_ACK_STORAGE_KEY = "assetdesk.topbarNotificationsAckAt";
 
@@ -229,7 +230,7 @@ export function Topbar() {
             {sessionInitials(auth)}
           </div>
           <div className="hidden sm:block text-left leading-tight min-w-0 flex-1">
-            <div className="text-xs font-medium truncate">Asset Desk</div>
+            <AppBrandName className="text-xs font-medium truncate block" />
             <div className="text-[10px] text-muted-foreground truncate" title={sessionSubtitle(auth)}>
               {sessionSubtitle(auth)}
             </div>

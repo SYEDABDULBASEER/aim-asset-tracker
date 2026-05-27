@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Boxes, Menu } from "lucide-react";
+import { Menu } from "lucide-react";
+import { AppLogo } from "@/components/brand/AppLogo";
 
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { adminNavItemsForRole, isAdminNavItemActive } from "@/components/layout/admin-nav";
+import { AppBrandName } from "@/components/brand/AppBrandName";
 
 export function MobileAdminNav() {
   const [open, setOpen] = useState(false);
@@ -58,11 +60,9 @@ export function MobileAdminNav() {
           <SheetDescription>Jump to a workspace section</SheetDescription>
         </SheetHeader>
         <div className="h-16 flex items-center gap-2.5 px-5 border-b border-sidebar-border">
-          <div className="h-9 w-9 rounded-lg bg-sidebar-primary flex items-center justify-center">
-            <Boxes className="h-5 w-5 text-sidebar-primary-foreground" />
-          </div>
+          <AppLogo className="h-8 w-auto max-w-[88px] shrink-0" />
           <div className="leading-tight text-left">
-            <div className="text-sm font-semibold text-white">Asset Desk</div>
+            <AppBrandName variant="on-dark" className="text-sm font-semibold" />
             <div className="text-[11px] text-sidebar-foreground/60">IT Admin Workspace</div>
           </div>
         </div>

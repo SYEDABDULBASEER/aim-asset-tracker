@@ -50,7 +50,7 @@ export const Route = createFileRoute("/admin/maintenance")({
   validateSearch: (search: Record<string, unknown>): MaintenanceSearch => ({
     assetId: typeof search.assetId === "string" ? search.assetId : undefined,
   }),
-  head: () => ({ meta: [{ title: "Maintenance — Asset Desk" }] }),
+  head: () => ({ meta: [{ title: "Maintenance — AssetSphere" }] }),
   component: Maintenance,
 });
 

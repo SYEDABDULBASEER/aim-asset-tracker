@@ -39,12 +39,6 @@ export function PortalIdentityCard() {
                 Tickets raised with this work email appear below. This portal does not use your IT
                 Firebase account at /login.
               </p>
-              <p className="text-[11px] text-amber-700/90 dark:text-amber-400/90 mt-1.5 leading-relaxed">
-                Privacy: your name and email are stored in this browser only (local storage). They
-                are not sent to Firebase as an employee login. Signing out of the IT workspace in the
-                same browser does not change this portal identity unless you choose “Use a different
-                email.”
-              </p>
             </div>
           </div>
           <Button

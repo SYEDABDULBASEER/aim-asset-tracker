@@ -12,6 +12,7 @@ import { AuthenticatedFetchBootstrap } from "@/components/auth/AuthenticatedFetc
 import { AuthGate } from "@/components/auth/AuthGate";
 import { AuthProvider } from "@/lib/auth/AuthProvider";
 import { Toaster } from "@/components/ui/sonner";
+import { APP_NAME, APP_TAGLINE } from "@/lib/branding";
 
 function NotFoundComponent() {
   return (
@@ -57,12 +58,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Enterprise Asset Desk" },
-      { name: "description", content: "AIM Asset Tracking, Maintenance & Ticketing" },
-      { property: "og:title", content: "Enterprise Asset Desk" },
-      { name: "twitter:title", content: "Enterprise Asset Desk" },
-      { property: "og:description", content: "AIM Asset Tracking, Maintenance & Ticketing" },
-      { name: "twitter:description", content: "AIM Asset Tracking, Maintenance & Ticketing" },
+      { title: APP_NAME },
+      { name: "description", content: APP_TAGLINE },
+      { property: "og:title", content: APP_NAME },
+      { name: "twitter:title", content: APP_NAME },
+      { property: "og:description", content: APP_TAGLINE },
+      { name: "twitter:description", content: APP_TAGLINE },
       {
         property: "og:image",
         content:

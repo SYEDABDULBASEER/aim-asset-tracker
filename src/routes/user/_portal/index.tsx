@@ -7,7 +7,7 @@ import { RaiseTicketForm } from "@/components/user/RaiseTicketForm";
 import { usePortalRequester } from "@/components/user/PortalRequesterProvider";
 
 export const Route = createFileRoute("/user/_portal/")({
-  head: () => ({ meta: [{ title: "Employee Support Portal — Asset Desk" }] }),
+  head: () => ({ meta: [{ title: "Employee Support Portal — AssetSphere" }] }),
   component: UserPortalPage,
 });
 

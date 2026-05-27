@@ -40,7 +40,7 @@ import { vendorSlaTone } from "@/lib/ui/status-tones";
 import { destructiveAlertActionClass, destructiveIconButtonClass } from "@/lib/ui/button-hierarchy";
 
 export const Route = createFileRoute("/admin/vendors")({
-  head: () => ({ meta: [{ title: "Vendors — Asset Desk" }] }),
+  head: () => ({ meta: [{ title: "Vendors — AssetSphere" }] }),
   component: Vendors,
 });
 

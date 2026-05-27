@@ -12,6 +12,6 @@ export const Route = createFileRoute("/login")({
         ? search.redirect
         : undefined,
   }),
-  head: () => ({ meta: [{ title: "IT sign in — Asset Desk" }] }),
+  head: () => ({ meta: [{ title: "IT sign in — AssetSphere" }] }),
   component: StaffLoginPage,
 });
